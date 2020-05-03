@@ -1,4 +1,7 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace SignInDevCenter
@@ -14,15 +17,24 @@ namespace SignInDevCenter
             _client = new HttpClient(_handler);
         }
 
-        public async Task<HttpResponseMessage> SendRequest(string url, HttpContent content = null, bool isPost = false)
+        public HttpService(Uri uri, string cookie):this()
+        {
+            _handler.CookieContainer.SetCookies(uri, cookie);
+        }
+
+        public async Task<HttpResponseMessage> SendRequest(string url, HttpMethod method, HttpContent content = null, Dictionary<string, string> appendHeaders = null)
         {
             HttpRequestMessage request = null;
             try
             {
-                request = new HttpRequestMessage(isPost ? HttpMethod.Post : HttpMethod.Get, url);
-                if (isPost)
+                request = new HttpRequestMessage(method, url);
+                request.Content = content;
+                if (appendHeaders != null)
                 {
-                    request.Content = content;
+                    foreach (var header in appendHeaders)
+                    {
+                        request.Headers.Add(header.Key, header.Value);
+                    }
                 }
                 return await _client.SendAsync(request);
             }
@@ -33,6 +45,31 @@ namespace SignInDevCenter
             finally
             {
                 request?.Dispose();
+            }
+        }
+
+        public async Task<string> SendRequestForString(string url, HttpMethod method, HttpContent content = null, Dictionary<string, string> appendHeader = null)
+        {
+            HttpResponseMessage responseMessage = null;
+            try
+            {
+                responseMessage = await SendRequest(url, method, content, appendHeader);
+                if (responseMessage.StatusCode == HttpStatusCode.OK)
+                {
+                    return await responseMessage.Content.ReadAsStringAsync();
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                responseMessage?.Dispose();
             }
         }
     }

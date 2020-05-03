@@ -13,22 +13,20 @@ namespace SignInDevCenter
     {
         private HttpService _httpService = new HttpService();
 
-        public async Task Run()
+        public async Task<string> SignIn(string username,string password)
         {
-            string username = ""; //Your username of Microsoft service
-            string password = ""; //Your password of Microsoft service
             var authorizeUrl = await _getAuthorizeUrl();
             var authorizeConfig = await _getAuthorizeConfig(authorizeUrl);
             var urlGoToAADError = authorizeConfig.urlGoToAADError + $"&username={username}";
             var (urlPost, ppft) = await _getLoginPostUrl(urlGoToAADError);
             var (code, state) = await _loginPost(urlPost, username, password, ppft);
             var tokenDic = await _getToken(code, state);
-            var cookie = await _authPostGateway(tokenDic);
+            return await _authPostGateway(tokenDic);
         }
 
         private async Task<string> _getAuthorizeUrl()
         {
-            var response = await _httpService.SendRequest("https://partner.microsoft.com/en-us/aad?action=signin&resource=797f4846-ba00-4fd7-ba43-dac1f8f63013&returnPath=%2fen-us%2fdashboard");
+            var response = await _httpService.SendRequest("https://partner.microsoft.com/en-us/aad?action=signin&resource=797f4846-ba00-4fd7-ba43-dac1f8f63013&returnPath=%2fen-us%2fdashboard", HttpMethod.Get);
             if (response.StatusCode == System.Net.HttpStatusCode.Redirect)
             {
                 var url = response.Headers.Location.ToString();
@@ -51,7 +49,7 @@ namespace SignInDevCenter
         }
         private async Task<AuthorizeConfig> _getAuthorizeConfig(string authorizeUrl)
         {
-            var response = await _httpService.SendRequest(authorizeUrl);
+            var response = await _httpService.SendRequest(authorizeUrl,HttpMethod.Get);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 var strContent = await response.Content.ReadAsStringAsync();
@@ -69,7 +67,7 @@ namespace SignInDevCenter
 
         private async Task<Tuple<string, string>> _getLoginPostUrl(string url)
         {
-            var response = await _httpService.SendRequest(url);
+            var response = await _httpService.SendRequest(url, HttpMethod.Get);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 var strContent = await response.Content.ReadAsStringAsync();
@@ -103,7 +101,7 @@ namespace SignInDevCenter
                 { "PPSX","Passp" }
             };
             FormUrlEncodedContent content = new FormUrlEncodedContent(contentDic);
-            var response = await _httpService.SendRequest(url, content, isPost: true);
+            var response = await _httpService.SendRequest(url,HttpMethod.Post, content);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 var strContent = await response.Content.ReadAsStringAsync();
@@ -127,7 +125,7 @@ namespace SignInDevCenter
                 {"state",stateValue}
             };
             FormUrlEncodedContent content = new FormUrlEncodedContent(contentDic);
-            var response = await _httpService.SendRequest(url, content, isPost: true);
+            var response = await _httpService.SendRequest(url, HttpMethod.Post, content);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 var strContent = await response.Content.ReadAsStringAsync();
@@ -149,7 +147,7 @@ namespace SignInDevCenter
         {
             var url = "https://partner.microsoft.com/aad/authPostGateway";
             FormUrlEncodedContent content = new FormUrlEncodedContent(dic);
-            var response = await _httpService.SendRequest(url, content, isPost: true);
+            var response = await _httpService.SendRequest(url, HttpMethod.Post, content);
             if (response.StatusCode == System.Net.HttpStatusCode.Redirect)
             {
                 return response.Headers.GetValues("Set-Cookie").Single(m => m.Contains(".AspNet.Cookies"));
