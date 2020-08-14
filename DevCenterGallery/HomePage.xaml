@@ -1,0 +1,70 @@
+﻿<Page x:Class="DevCenterGallary.HomePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:converters="using:DevCenterGallary.Converters"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:local="using:DevCenterGallary"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:models="using:DevCenterGallary.Models"
+      xmlns:vm="using:DevCenterGallary.ViewModels"
+      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+      mc:Ignorable="d">
+    <Page.Resources>
+        <converters:BoolToVisibility x:Key="FalseToVisible" Invert="True" />
+    </Page.Resources>
+    <Grid>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid>
+                <StackPanel Height="56"
+                            Padding="12,4"
+                            Background="DarkGray"
+                            Orientation="Horizontal">
+                    <Button Click="{x:Bind _vm.Login}"
+                            Content="Sign me in"
+                            Visibility="{x:Bind _vm.IsSignedIn, Mode=OneWay, Converter={StaticResource FalseToVisible}}" />
+                    <TextBlock VerticalAlignment="Center"
+                               Foreground="Green"
+                               Text="You have signed in."
+                               Visibility="{x:Bind _vm.IsSignedIn, Mode=OneWay}" />
+                </StackPanel>
+                <TextBlock Margin="12,4"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           FontSize="16"
+                           Foreground="Green"
+                           Text="Persoanl Cookie"
+                           Visibility="{x:Bind _vm.IsPersonalCookie, Mode=OneWay}" />
+            </Grid>
+
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <ListView Background="LightGray"
+                          ItemsSource="{x:Bind _vm.Pages}"
+                          SelectionChanged="ListView_SelectionChanged">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:PageModel">
+                            <TextBlock Text="{x:Bind PageName}" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+                <Frame x:Name="frameNavigation" Grid.Column="1" />
+            </Grid>
+        </Grid>
+        <Grid HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
+              Visibility="{x:Bind vm:HomeViewModel.BusyVM.IsProcessing, Mode=OneWay}">
+            <Rectangle Fill="Black" Opacity="0.2" />
+            <ProgressRing Width="52"
+                          Height="52"
+                          Foreground="AliceBlue"
+                          IsActive="True" />
+        </Grid>
+    </Grid>
+</Page>
