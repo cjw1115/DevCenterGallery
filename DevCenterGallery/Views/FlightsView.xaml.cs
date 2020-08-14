@@ -1,8 +1,5 @@
 ﻿using DevCenterGallary.Common.Models;
-using DevCenterGallary.Common.Services;
-using System.Collections.ObjectModel;
 using Windows.UI.Xaml.Controls;
-using GalaSoft.MvvmLight.Helpers;
 using DevCenterGallary.ViewModels;
 using Windows.UI.Xaml.Navigation;
 

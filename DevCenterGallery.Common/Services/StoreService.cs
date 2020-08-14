@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Text;
 using Windows.UI.Xaml.Media.Imaging;
-using Windows.Storage.Streams;
 using System.IO;
 using GalaSoft.MvvmLight.Ioc;
 
