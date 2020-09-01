@@ -1,0 +1,17 @@
+﻿@model IList<DevCenterGallary.Common.Models.Product>
+@{
+    ViewData["Title"] = "Flights";
+}
+
+    <div class="text-left">
+        <ul class="list-group">
+            @foreach (var item in Model)
+            {
+            <li class="list-group-item">
+                <img width="48" height="48" src="@item.LogoUri" />
+                @item.Name
+                <input  type="hidden" value="@item.BigId"/>
+            </li>
+            }
+        </ul>
+    </div>

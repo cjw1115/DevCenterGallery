@@ -7,9 +7,7 @@ using System;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Text;
-using Windows.UI.Xaml.Media.Imaging;
 using System.IO;
-using GalaSoft.MvvmLight.Ioc;
 
 namespace DevCenterGallary.Common.Services
 {
@@ -42,10 +40,11 @@ namespace DevCenterGallary.Common.Services
         }
 
         private HttpService _httpService = new HttpService();
-        private ICookieService _cookieService => SimpleIoc.Default.GetInstance<ICookieService>();
+        private ICookieService _cookieService;
  
-        public StoreService()
+        public StoreService(ICookieService cookieService)
         {
+            _cookieService = cookieService;
         }
 
         public async Task PrepareCookie()
@@ -75,18 +74,6 @@ namespace DevCenterGallary.Common.Services
             foreach (var item in products)
             {
                 item.LogoUri = new Uri(new Uri(_hostUri), item.LogoUri).ToString();
-                try
-                {
-                    using (var imgStream = await _httpService.SendRequestAndGetStream(item.LogoUri, HttpMethod.Get))
-                    {
-                        BitmapImage image = new BitmapImage();
-                        await image.SetSourceAsync(imgStream.AsRandomAccessStream());
-                        item.ImageSource = image;
-                    }
-                }
-                catch
-                {
-                }
             }
             return products.ToList();
         }

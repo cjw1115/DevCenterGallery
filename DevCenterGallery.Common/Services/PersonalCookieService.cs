@@ -20,33 +20,36 @@ namespace DevCenterGallary.Common.Services
 
         public async Task<string> GetDevCenterCookie()
         {
-            Windows.Storage.ApplicationData.Current.LocalSettings.Values.TryGetValue(COOKIE_KEY, out object oldCookieObj);
-            if (oldCookieObj is string oldCookie)
-            {
-                if (await _verifyOldCookie(oldCookie))
-                {
-                    return oldCookie;
-                }
-            }
+            //Windows.Storage.ApplicationData.Current.LocalSettings.Values.TryGetValue(COOKIE_KEY, out object oldCookieObj);
+
+            //if (oldCookieObj is string oldCookie)
+            //{
+            //    if (await _verifyOldCookie(oldCookie))
+            //    {
+            //        return oldCookie;
+            //    }
+            //}
 
             string username = ""; // TODO: Your username of Microsoft service
             string password = ""; // TODO: Your password of Microsoft service
+
             Debug.Assert(!string.IsNullOrEmpty(username));
             Debug.Assert(!string.IsNullOrEmpty(password));
             
-            var authorizeUrl = await _getAuthorizeUrl();
-            var authorizeConfig = await _getAuthorizeConfig(authorizeUrl);
+            var oAuthUrl = await _getOAuthUrlForDashboard();
+            var authorizeConfig = await _getAuthorizeConfig(oAuthUrl);
             var urlGoToAADError = authorizeConfig.urlGoToAADError + $"&username={username}";
-            var (urlPost, ppft) = await _getLoginPostUrl(urlGoToAADError);
-            var (code, state) = await _loginPost(urlPost, username, password, ppft);
-            var tokenDic = await _getToken(code, state);
+            var (urlPost, ppft) = await _getLiveLoginUrl(urlGoToAADError);
+            (urlPost, ppft) = await _login(urlPost, username, password, ppft);
+            var (code, state) = await _loginWithOpid(urlPost, ppft);
+            var tokenDic = await _oAuth(code, state);
             var cookie =  await _authPostGateway(tokenDic);
 
-            Windows.Storage.ApplicationData.Current.LocalSettings.Values[COOKIE_KEY] = cookie;
+            //Windows.Storage.ApplicationData.Current.LocalSettings.Values[COOKIE_KEY] = cookie;
             return cookie;
         }
 
-        private async Task<string> _getAuthorizeUrl()
+        private async Task<string> _getOAuthUrlForDashboard()
         {
             var response = await _httpService.SendRequest("https://partner.microsoft.com/en-us/aad?action=signin&resource=797f4846-ba00-4fd7-ba43-dac1f8f63013&returnPath=%2fen-us%2fdashboard", HttpMethod.Get);
             if (response.StatusCode == System.Net.HttpStatusCode.Redirect)
@@ -87,7 +90,7 @@ namespace DevCenterGallary.Common.Services
             return null;
         }
 
-        private async Task<Tuple<string, string>> _getLoginPostUrl(string url)
+        private async Task<Tuple<string, string>> _getLiveLoginUrl(string url)
         {
             var response = await _httpService.SendRequest(url, HttpMethod.Get);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
@@ -108,25 +111,57 @@ namespace DevCenterGallary.Common.Services
             return null;
         }
 
-        private async Task<Tuple<string, string>> _loginPost(string url, string username, string password, string ppft)
+        private async Task<Tuple<string, string>> _login(string url, string username, string password, string ppft)
         {
             var contentDic = new Dictionary<string, string>
             {
                 {"login",username },
                 {"loginfmt",username },
-                {"passwd",password },
                 {"type","11" },
                 {"LoginOptions","3" },
+                {"passwd",password },
                 {"ps","2" },
-                {"NewUser","1" },
                 {"PPFT",ppft },
-                { "PPSX","Passp" }
+                {"PPSX","Passp" },
+                {"NewUser","1" },
+                {"IsFidoSupported","1" }
             };
+            FormUrlEncodedContent content = new FormUrlEncodedContent(contentDic);
+            var response = await _httpService.SendRequest(url, HttpMethod.Post, content);
+            
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                var strContent = await response.Content.ReadAsStringAsync();
+                var startFlag = "sFT:'";
+                var startIndex = strContent.IndexOf(startFlag) + startFlag.Length;
+                strContent = strContent.Substring(startIndex, strContent.Length - startIndex);
+                var sFT = strContent.Substring(0, strContent.IndexOf('\''));
+
+                startFlag = "urlPost:'";
+                startIndex = strContent.IndexOf(startFlag) + startFlag.Length;
+                strContent = strContent.Substring(startIndex, strContent.Length - startIndex);
+                var urlPost = strContent.Substring(0, strContent.IndexOf('\''));
+
+                return Tuple.Create(urlPost, ppft);
+            }
+            return null;
+        }
+
+        private async Task<Tuple<string, string>> _loginWithOpid(string url, string ppft)
+        {
+            var contentDic = new Dictionary<string, string>
+            {
+                {"type", "28" },
+                {"LoginOptions", "3" },
+                {"PPFT", ppft }
+            };
+
             FormUrlEncodedContent content = new FormUrlEncodedContent(contentDic);
             var response = await _httpService.SendRequest(url, HttpMethod.Post, content);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 var strContent = await response.Content.ReadAsStringAsync();
+
                 HtmlParser parser = new HtmlParser();
                 using (var doc = parser.ParseDocument(strContent))
                 {
@@ -138,7 +173,7 @@ namespace DevCenterGallary.Common.Services
             return null;
         }
 
-        private async Task<Dictionary<string, string>> _getToken(string codeValue, string stateValue)
+        private async Task<Dictionary<string, string>> _oAuth(string codeValue, string stateValue)
         {
             var url = "https://login.microsoftonline.com/common/federation/oauth2";
             var contentDic = new Dictionary<string, string>

@@ -190,12 +190,6 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DevCenterGallery.Common\DevCenterGallery.Common.csproj">
-      <Project>{bb238d3d-82f8-4559-9636-d2b33a77aee0}</Project>
-      <Name>DevCenterGallery.Common</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="DevCenterGallery_TemporaryKey.pfx" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">

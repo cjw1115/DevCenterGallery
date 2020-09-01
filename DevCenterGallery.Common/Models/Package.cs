@@ -1,10 +1,9 @@
-﻿using GalaSoft.MvvmLight;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace DevCenterGallary.Common.Models
 {
-    public class Package: ViewModelBase
+    public class Package
     {
         [JsonPropertyName("Id")]
         public string PackageId { get; set; }
@@ -22,11 +21,7 @@ namespace DevCenterGallary.Common.Models
 
         private PreinstallKitStatus _preinstallKitStatus;
         [JsonIgnore]
-        public PreinstallKitStatus PreinstallKitStatus
-        {
-            get => _preinstallKitStatus;
-            set => Set(ref _preinstallKitStatus, value);
-        }
+        public PreinstallKitStatus PreinstallKitStatus { get; set; }
     }
 
     public enum PreinstallKitStatus

@@ -1,5 +1,4 @@
 ﻿using System.Text.Json.Serialization;
-using Windows.UI.Xaml.Media;
 
 namespace DevCenterGallary.Common.Models
 {
@@ -13,8 +12,5 @@ namespace DevCenterGallary.Common.Models
 
         [JsonPropertyName("logoUri")]
         public string LogoUri { get; set; }
-        
-        [JsonIgnore]
-        public ImageSource ImageSource { get; set; }
     }
 }
