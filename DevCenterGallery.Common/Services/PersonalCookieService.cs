@@ -20,16 +20,6 @@ namespace DevCenterGallary.Common.Services
 
         public async Task<string> GetDevCenterCookie()
         {
-            //Windows.Storage.ApplicationData.Current.LocalSettings.Values.TryGetValue(COOKIE_KEY, out object oldCookieObj);
-
-            //if (oldCookieObj is string oldCookie)
-            //{
-            //    if (await _verifyOldCookie(oldCookie))
-            //    {
-            //        return oldCookie;
-            //    }
-            //}
-
             string username = ""; // TODO: Your username of Microsoft service
             string password = ""; // TODO: Your password of Microsoft service
 
@@ -44,8 +34,6 @@ namespace DevCenterGallary.Common.Services
             var (code, state) = await _loginWithOpid(urlPost, ppft);
             var tokenDic = await _oAuth(code, state);
             var cookie =  await _authPostGateway(tokenDic);
-
-            //Windows.Storage.ApplicationData.Current.LocalSettings.Values[COOKIE_KEY] = cookie;
             return cookie;
         }
 

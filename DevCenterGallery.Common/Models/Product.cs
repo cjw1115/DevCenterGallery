@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace DevCenterGallary.Common.Models
 {
@@ -12,5 +13,7 @@ namespace DevCenterGallary.Common.Models
 
         [JsonPropertyName("logoUri")]
         public string LogoUri { get; set; }
+
+        public IList<Submission> Submissions { get; set; }
     }
 }

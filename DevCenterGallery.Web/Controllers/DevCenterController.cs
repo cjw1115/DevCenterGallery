@@ -9,6 +9,7 @@ using DevCenterGallery.Web.Models;
 using DevCenterGallary.Common.Services;
 using DevCenterGallary.Common.Models;
 using System.IO;
+using System.Threading;
 
 namespace DevCenterGallery.Web.Controllers
 {
@@ -23,6 +24,10 @@ namespace DevCenterGallery.Web.Controllers
             _logger = logger;
             _cookieService = new PersonalCookieService();
             _storeService = new StoreService(_cookieService);
+
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            _refreshProductsJob();
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         }
 
         private Stream _getProductFile()
@@ -58,7 +63,7 @@ namespace DevCenterGallery.Web.Controllers
                 if (productList.Count <= 0)
                 {
                     await _storeService.PrepareCookie();
-                    var products = await _storeService.GetProducts();
+                    var products = await _storeService.GetProductsAsync();
                     productList.AddRange(products);
 
                     productsStr = System.Text.Json.JsonSerializer.Serialize(products);
@@ -80,13 +85,13 @@ namespace DevCenterGallery.Web.Controllers
 
         public async Task<IActionResult> Flights(Product product)
         {
-            var submissions = await _storeService.GetSubmissions(product.BigId);
+            var submissions = await _storeService.GetSubmissionsAsync(product.BigId);
             return View(submissions);
         }
 
         public async Task<IActionResult> Packages(string productId,string submissionId)
         {
-            var pacakges = await _storeService.GetPackages(productId, submissionId);
+            var pacakges = await _storeService.GetPackagesAsync(productId, submissionId);
             return View(pacakges);
         }
 
@@ -101,59 +106,78 @@ namespace DevCenterGallery.Web.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-//        public async void RequestPreinstallKit(Package package)
-//        {
-//            try
-//            {
-//                HomeViewModel.BusyVM.IsProcessing = true;
-//                await _storeService.GeneratePreinstallKit(package.PackageId);
-//            }
-//            catch (Exception e)
-//            {
-//#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-//                new MessageDialog(e.Message).ShowAsync();
-//#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-//            }
-//            finally
-//            {
-//                HomeViewModel.BusyVM.IsProcessing = false;
-//            }
+        private async Task _refreshProductsJob()
+        {
+            await _storeService.PrepareCookie();
+            var products = await _storeService.GetProductsAsync();
+            foreach (var product in products)
+            {
+                product.Submissions = await _storeService.GetSubmissionsAsync(product.BigId);
+                foreach (var submission in product.Submissions)
+                {
+                    submission.Packages = await _storeService.GetPackagesAsync(product.BigId, submission.Id);
+                }
+            }
 
-//#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-//            Task.Run(async () =>
-//            {
-//                while (true)
-//                {
-//                    var workflow = await _storeService.QueryPreinstallKitWorkflowStatus(package.PackageId);
-//                    switch (workflow.WorkflowState)
-//                    {
-//                        case WorkflowState.WorkflowQueued:
-//                        case WorkflowState.GeneratePreinstallPackageInProgress:
-//                            _threadContext.Post((o) =>
-//                            {
-//                                package.PreinstallKitStatus = PreinstallKitStatus.Generating;
-//                            }, null);
-//                            break;
-//                        case WorkflowState.GeneratePreinstallPackageComplete:
-//                            _threadContext.Post((o) =>
-//                            {
-//                                package.PreinstallKitStatus = PreinstallKitStatus.Ready;
-//                                GetFlightPackages();
-//                            }, null);
-//                            return;
-//                        case WorkflowState.GeneratePreinstallPackageFailed:
-//                            _threadContext.Post((o) =>
-//                            {
-//                                package.PreinstallKitStatus = PreinstallKitStatus.NeedToGenerate;
-//                            }, null);
-//                            return;
-//                        default:
-//                            return;
-//                    }
-//                    await Task.Delay(500);
-//                }
-//            });
-//#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-//        }
+            var productsStr = System.Text.Json.JsonSerializer.Serialize(products);
+            using (StreamWriter writer = new StreamWriter(_getProductFile()))
+            {
+                writer.Write(productsStr);
+            }
+        }
+        //        public async void RequestPreinstallKit(Package package)
+        //        {
+        //            try
+        //            {
+        //                HomeViewModel.BusyVM.IsProcessing = true;
+        //                await _storeService.GeneratePreinstallKit(package.PackageId);
+        //            }
+        //            catch (Exception e)
+        //            {
+        //#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+        //                new MessageDialog(e.Message).ShowAsync();
+        //#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+        //            }
+        //            finally
+        //            {
+        //                HomeViewModel.BusyVM.IsProcessing = false;
+        //            }
+
+        //#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+        //            Task.Run(async () =>
+        //            {
+        //                while (true)
+        //                {
+        //                    var workflow = await _storeService.QueryPreinstallKitWorkflowStatus(package.PackageId);
+        //                    switch (workflow.WorkflowState)
+        //                    {
+        //                        case WorkflowState.WorkflowQueued:
+        //                        case WorkflowState.GeneratePreinstallPackageInProgress:
+        //                            _threadContext.Post((o) =>
+        //                            {
+        //                                package.PreinstallKitStatus = PreinstallKitStatus.Generating;
+        //                            }, null);
+        //                            break;
+        //                        case WorkflowState.GeneratePreinstallPackageComplete:
+        //                            _threadContext.Post((o) =>
+        //                            {
+        //                                package.PreinstallKitStatus = PreinstallKitStatus.Ready;
+        //                                GetFlightPackages();
+        //                            }, null);
+        //                            return;
+        //                        case WorkflowState.GeneratePreinstallPackageFailed:
+        //                            _threadContext.Post((o) =>
+        //                            {
+        //                                package.PreinstallKitStatus = PreinstallKitStatus.NeedToGenerate;
+        //                            }, null);
+        //                            return;
+        //                        default:
+        //                            return;
+        //                    }
+        //                    await Task.Delay(500);
+        //                }
+        //            });
+        //#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+        //        }
     }
 }

@@ -20,5 +20,7 @@ namespace DevCenterGallary.Common.Models
 
         [JsonPropertyName("releaseRank")]
         public int ReleaseRank { get; set; }
+
+        public IList<Package> Packages { get; set; } 
     }
 }

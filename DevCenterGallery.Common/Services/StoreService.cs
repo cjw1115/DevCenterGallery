@@ -63,47 +63,66 @@ namespace DevCenterGallary.Common.Services
             }
         }
 
-        public async Task<IList<Product>> GetProducts()
+        public async Task<IList<Product>> GetProductsAsync()
         {
-            var stringContent = await _httpService.SendRequestAndGetString(_productsUri, Encoding.UTF8, HttpMethod.Get);
-            var products = JsonSerializer.Deserialize<ProductsModel>(stringContent).productList.AsEnumerable();
-            if (!(_cookieService is PersonalCookieService))
+            try
             {
-                products = JsonSerializer.Deserialize<ProductsModel>(stringContent).productList.Where(m => _productFilter.Contains(m.BigId));
-            }
-            foreach (var item in products)
-            {
-                item.LogoUri = new Uri(new Uri(_hostUri), item.LogoUri).ToString();
-            }
-            return products.ToList();
-        }
-
-        public async Task<IList<Submission>> GetSubmissions(string productId)
-        {
-            _bigId = productId;
-            var stringContent = await _httpService.SendRequestAndGetString(_getSubmissionsUri, Encoding.UTF8, HttpMethod.Get);
-            var submissions = JsonSerializer.Deserialize<IList<Submission>>(stringContent);
-            return submissions.OrderByDescending(m => m.ReleaseRank).ToList();
-        }
-
-        public async Task<IList<Package>> GetPackages(string productId, string submissionId)
-        {
-            _bigId = productId;
-            _submissonId = submissionId;
-            var stringContent = await _httpService.SendRequestAndGetString(_getPackagesUri, Encoding.UTF8, HttpMethod.Get);
-            var submissions = JsonSerializer.Deserialize<IList<PackagesModel>>(stringContent);
-            if(submissions!=null&& submissions.Count>0)
-            {
-                foreach (var item in submissions[0].Packages)
+                var stringContent = await _httpService.SendRequestAndGetString(_productsUri, Encoding.UTF8, HttpMethod.Get);
+                var products = JsonSerializer.Deserialize<ProductsModel>(stringContent).productList.AsEnumerable();
+                if (!(_cookieService is PersonalCookieService))
                 {
-                    item.PcakgeFileInfo = item.Assets.FirstOrDefault(m => m.AssetType == "UAPPreinstalledBinary")?.FileInfo;
-                    item.PreinstallKitStatus = item.PcakgeFileInfo != null ? PreinstallKitStatus.Ready : PreinstallKitStatus.NeedToGenerate;
-                    item.TargetPlatform = item.RuntimeTargetPlatforms.First();
+                    products = JsonSerializer.Deserialize<ProductsModel>(stringContent).productList.Where(m => _productFilter.Contains(m.BigId));
                 }
-                return submissions[0].Packages;
+                foreach (var item in products)
+                {
+                    item.LogoUri = new Uri(new Uri(_hostUri), item.LogoUri).ToString();
+                }
+                return products.ToList();
             }
+            catch 
+            {
+            }
+            return new List<Product>(0);
+        }
 
-            return null;
+        public async Task<IList<Submission>> GetSubmissionsAsync(string productId)
+        {
+            try
+            {
+                _bigId = productId;
+                var stringContent = await _httpService.SendRequestAndGetString(_getSubmissionsUri, Encoding.UTF8, HttpMethod.Get);
+                var submissions = JsonSerializer.Deserialize<IList<Submission>>(stringContent);
+                return submissions.OrderByDescending(m => m.ReleaseRank).ToList();
+            }
+            catch
+            {
+            }
+            return new List<Submission>(0);
+        }
+
+        public async Task<IList<Package>> GetPackagesAsync(string productId, string submissionId)
+        {
+            try
+            {
+                _bigId = productId;
+                _submissonId = submissionId;
+                var stringContent = await _httpService.SendRequestAndGetString(_getPackagesUri, Encoding.UTF8, HttpMethod.Get);
+                var submissions = JsonSerializer.Deserialize<IList<PackagesModel>>(stringContent);
+                if (submissions != null && submissions.Count > 0)
+                {
+                    foreach (var item in submissions[0].Packages)
+                    {
+                        item.PcakgeFileInfo = item.Assets.FirstOrDefault(m => m.AssetType == "UAPPreinstalledBinary")?.FileInfo;
+                        item.PreinstallKitStatus = item.PcakgeFileInfo != null ? PreinstallKitStatus.Ready : PreinstallKitStatus.NeedToGenerate;
+                        item.TargetPlatform = item.RuntimeTargetPlatforms.First();
+                    }
+                    return submissions[0].Packages;
+                }
+            }
+            catch
+            {
+            }
+            return new List<Package>(0);
         }
 
         public async Task GeneratePreinstallKit(string packageId)
