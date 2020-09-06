@@ -1,0 +1,63 @@
+﻿@model DevCenterGallary.Common.Models.Submission
+@{
+    ViewData["Title"] = "Packages";
+    var productName = ViewData["productName"];
+    var productId = ViewData["productId"];
+    var submissionId = ViewData["submissionId"];
+}
+
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Products">Products</a></li>
+        <li class="breadcrumb-item"><a asp-action="Submissions" asp-route-productId="@productId">@productName</a></li>
+        <li class="breadcrumb-item active"><a href="#">@Model.FriendlyName</a></li>
+    </ol>
+    <div class="text-left">
+        @foreach (var item in Model.Packages)
+        {
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">@item.FileName</h3>
+            </div>
+            <div class="panel-body">
+                <table class="table">
+                    @if (!string.IsNullOrEmpty(item.PackageVersion))
+                    {
+                        <tr>
+                            <td>Version</td>
+                            <td>@item.PackageVersion</td>
+                        </tr>
+                    }
+
+                    @if (!string.IsNullOrEmpty(item.Architecture))
+                    {
+                        <tr>
+                            <td>Architecture</td>
+                            <td>@item.Architecture</td>
+                        </tr>
+                    }
+
+                    @if (item.TargetPlatform != null)
+                    {
+                        <tr>
+                            <td>Target Platform</td>
+                            <td>@item.TargetPlatform.ToString()</td>
+                        </tr>
+                    }
+
+                    @if (item.PreinstallKitStatus == DevCenterGallary.Common.Models.PreinstallKitStatus.Ready)
+                    {
+                        <tr>
+                            <td><a href="@item.PcakgeFileInfo.SasUrl">Download Preinstall Kit</a></td>
+                        </tr>
+                    }
+                    else if (item.PreinstallKitStatus == DevCenterGallary.Common.Models.PreinstallKitStatus.NeedToGenerate)
+                    {
+                        <tr>
+                            <td><a href="#">Generate Preinstall Kit</a></td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
+        }
+    </div>

@@ -28,8 +28,34 @@ namespace DevCenterGallery.Web.Controllers
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             _refreshProductsJob();
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+
+            _prepareData();
         }
 
+        private List<Product> _products;
+        private void _prepareData()
+        {
+            _products = new List<Product>();
+            try
+            {
+                string productsStr;
+                var productsFileStream = _getProductFile();
+                StreamReader reader = new StreamReader(productsFileStream);
+                productsStr = reader.ReadToEnd();
+                try
+                {
+                    _products.AddRange(System.Text.Json.JsonSerializer.Deserialize<IList<Product>>(productsStr));
+                }
+                catch
+                {
+
+                }
+                productsFileStream.Close();
+            }
+            catch
+            {
+            }
+        }
         private Stream _getProductFile()
         {
             var productsDirStr = Path.Combine(Directory.GetCurrentDirectory(), "Products");
@@ -42,57 +68,26 @@ namespace DevCenterGallery.Web.Controllers
             return System.IO.File.Open(productFileStr, FileMode.OpenOrCreate, FileAccess.ReadWrite);
         }
 
-        public async Task<IActionResult> Products()
+        public IActionResult Products()
         {
-            List<Product> productList = new List<Product>();
-            try
-            {
-                string productsStr;
-                var productsFileStream = _getProductFile();
-                StreamReader reader = new StreamReader(productsFileStream);
-                productsStr = reader.ReadToEnd();
-                try
-                {
-                    productList.AddRange(System.Text.Json.JsonSerializer.Deserialize<IList<Product>>(productsStr));
-                }
-                catch
-                {
-
-                }
-
-                if (productList.Count <= 0)
-                {
-                    await _storeService.PrepareCookie();
-                    var products = await _storeService.GetProductsAsync();
-                    productList.AddRange(products);
-
-                    productsStr = System.Text.Json.JsonSerializer.Serialize(products);
-
-                    productsFileStream.Seek(0, SeekOrigin.Begin);
-                    using (StreamWriter writer = new StreamWriter(productsFileStream))
-                    {
-                        writer.Write(productsStr);
-                    }
-                }
-                productsFileStream.Close();
-            }
-            catch
-            {
-
-            }
-            return View("Flights", productList);
+            return View("Products", _products);
         }
 
-        public async Task<IActionResult> Flights(Product product)
+        public IActionResult Submissions(string productId)
         {
-            var submissions = await _storeService.GetSubmissionsAsync(product.BigId);
-            return View(submissions);
+            var product = _products.FirstOrDefault(m => m.BigId == productId);
+            ViewData["productId"] = productId;
+            return View("Submissions", product);
         }
 
-        public async Task<IActionResult> Packages(string productId,string submissionId)
+        public IActionResult Packages(string productId, string submissionId)
         {
-            var pacakges = await _storeService.GetPackagesAsync(productId, submissionId);
-            return View(pacakges);
+            var product = _products.FirstOrDefault(m => m.BigId == productId);
+            var submission = product.Submissions.FirstOrDefault(m => m.Id == submissionId);
+            ViewData["productId"] = productId;
+            ViewData["submissionId"] = submissionId;
+            ViewData["productName"] = product.Name;
+            return View("Packages", submission);
         }
 
         public IActionResult Privacy()
@@ -108,22 +103,29 @@ namespace DevCenterGallery.Web.Controllers
 
         private async Task _refreshProductsJob()
         {
-            await _storeService.PrepareCookie();
-            var products = await _storeService.GetProductsAsync();
-            foreach (var product in products)
+            try
             {
-                product.Submissions = await _storeService.GetSubmissionsAsync(product.BigId);
-                foreach (var submission in product.Submissions)
+                await _storeService.PrepareCookie();
+                var products = await _storeService.GetProductsAsync();
+                foreach (var product in products)
                 {
-                    submission.Packages = await _storeService.GetPackagesAsync(product.BigId, submission.Id);
+                    product.Submissions = await _storeService.GetSubmissionsAsync(product.BigId);
+                    foreach (var submission in product.Submissions)
+                    {
+                        submission.Packages = await _storeService.GetPackagesAsync(product.BigId, submission.Id);
+                    }
+                }
+                var productsStr = System.Text.Json.JsonSerializer.Serialize(products);
+                using (StreamWriter writer = new StreamWriter(_getProductFile()))
+                {
+                    writer.Write(productsStr);
                 }
             }
-
-            var productsStr = System.Text.Json.JsonSerializer.Serialize(products);
-            using (StreamWriter writer = new StreamWriter(_getProductFile()))
+            catch
             {
-                writer.Write(productsStr);
+
             }
+            
         }
         //        public async void RequestPreinstallKit(Package package)
         //        {

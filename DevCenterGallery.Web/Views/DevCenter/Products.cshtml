@@ -1,15 +1,13 @@
 ﻿@model IList<DevCenterGallary.Common.Models.Product>
 @{
-    ViewData["Title"] = "Flights";
+    ViewData["Title"] = "Products";
 }
-
     <div class="text-left">
         <ul class="list-group">
             @foreach (var item in Model)
             {
             <li class="list-group-item">
-                <img width="48" height="48" src="@item.LogoUri" />
-                @item.Name
+                <a asp-action="Submissions" asp-route-productId="@item.BigId">@item.Name</a>
                 <input  type="hidden" value="@item.BigId"/>
             </li>
             }
