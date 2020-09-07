@@ -73,14 +73,7 @@ namespace DevCenterGallary.Common.Services
 
         private class AuthorizeConfig
         {
-            [JsonPropertyName("sFT")]
-            public string flowToken { get; set; }
-
-            [JsonPropertyName("sCtx")]
-            public string Ctx { get; set; }
-
             public string urlGoToAADError { get; set; }
-            public string urlPostMsa { get; set; }
 
         }
         private async Task<AuthorizeConfig> _getAuthorizeConfig(string authorizeUrl)

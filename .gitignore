@@ -339,3 +339,4 @@ ASALocalRun/
 # BeatPulse healthcheck temp database
 healthchecksdb
 /DevCenterGallery.Web/DevCenterConfig.json
+/DevCenterGallery.Web/Products/Products.json

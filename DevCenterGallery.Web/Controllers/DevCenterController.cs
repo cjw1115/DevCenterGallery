@@ -26,7 +26,7 @@ namespace DevCenterGallery.Web.Controllers
             _storeService = new StoreService(_cookieService);
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            _refreshProductsJob();
+            //_refreshProductsJob();
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
             _prepareData();
@@ -90,6 +90,37 @@ namespace DevCenterGallery.Web.Controllers
             return View("Packages", submission);
         }
 
+        [HttpPost]
+        public async Task<JsonResult> GeneratePreinstallKit(string packageId)
+        {
+            await _storeService.PrepareCookie();
+            await _storeService.GeneratePreinstallKit(packageId);
+            return Json(new { status = PreinstallKitStatus.Generating.ToString() });
+        }
+
+        public async Task<JsonResult> QueryPreinstallKitWorkflowStatus(string packageId)
+        {
+            await _storeService.PrepareCookie();
+            var workflow = await _storeService.QueryPreinstallKitWorkflowStatus(packageId);
+            var preinstallKitStatus = PreinstallKitStatus.NeedToGenerate;
+            switch (workflow.WorkflowState)
+            {
+                case WorkflowState.WorkflowQueued:
+                case WorkflowState.GeneratePreinstallPackageInProgress:
+                    preinstallKitStatus = PreinstallKitStatus.Generating;
+                    break;
+                case WorkflowState.GeneratePreinstallPackageComplete:
+                    preinstallKitStatus = PreinstallKitStatus.Ready;
+                    break;
+                case WorkflowState.GeneratePreinstallPackageFailed:
+                    preinstallKitStatus = PreinstallKitStatus.NeedToGenerate;
+                    break;
+                default:
+                    break;
+            }
+            return Json(new { status = preinstallKitStatus.ToString()});
+        }
+
         public IActionResult Privacy()
         {
             return View();
@@ -127,59 +158,5 @@ namespace DevCenterGallery.Web.Controllers
             }
             
         }
-        //        public async void RequestPreinstallKit(Package package)
-        //        {
-        //            try
-        //            {
-        //                HomeViewModel.BusyVM.IsProcessing = true;
-        //                await _storeService.GeneratePreinstallKit(package.PackageId);
-        //            }
-        //            catch (Exception e)
-        //            {
-        //#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-        //                new MessageDialog(e.Message).ShowAsync();
-        //#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-        //            }
-        //            finally
-        //            {
-        //                HomeViewModel.BusyVM.IsProcessing = false;
-        //            }
-
-        //#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-        //            Task.Run(async () =>
-        //            {
-        //                while (true)
-        //                {
-        //                    var workflow = await _storeService.QueryPreinstallKitWorkflowStatus(package.PackageId);
-        //                    switch (workflow.WorkflowState)
-        //                    {
-        //                        case WorkflowState.WorkflowQueued:
-        //                        case WorkflowState.GeneratePreinstallPackageInProgress:
-        //                            _threadContext.Post((o) =>
-        //                            {
-        //                                package.PreinstallKitStatus = PreinstallKitStatus.Generating;
-        //                            }, null);
-        //                            break;
-        //                        case WorkflowState.GeneratePreinstallPackageComplete:
-        //                            _threadContext.Post((o) =>
-        //                            {
-        //                                package.PreinstallKitStatus = PreinstallKitStatus.Ready;
-        //                                GetFlightPackages();
-        //                            }, null);
-        //                            return;
-        //                        case WorkflowState.GeneratePreinstallPackageFailed:
-        //                            _threadContext.Post((o) =>
-        //                            {
-        //                                package.PreinstallKitStatus = PreinstallKitStatus.NeedToGenerate;
-        //                            }, null);
-        //                            return;
-        //                        default:
-        //                            return;
-        //                    }
-        //                    await Task.Delay(500);
-        //                }
-        //            });
-        //#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-        //        }
     }
 }

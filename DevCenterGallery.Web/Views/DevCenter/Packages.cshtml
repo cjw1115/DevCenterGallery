@@ -53,7 +53,7 @@
                     else if (item.PreinstallKitStatus == DevCenterGallary.Common.Models.PreinstallKitStatus.NeedToGenerate)
                     {
                         <tr>
-                            <td><a href="#">Generate Preinstall Kit</a></td>
+                            <td><a id="id-generatePreinstallKit" packageId="@item.PackageId" onclick="_generatePreinstallKit(this)" href="javascript:void(0);" >Generate Preinstall Kit</a></td>
                         </tr>
                     }
                 </table>
@@ -61,3 +61,29 @@
         </div>
         }
     </div>
+    <script type="text/javascript">
+        self.setInterval(_queryPreinstallKitWorkflowStatus, 5000);
+        function _queryPreinstallKitWorkflowStatus() {
+            var pid = $("#id-generatePreinstallKit").attr("packageId");
+            $.getJSON("QueryPreinstallKitWorkflowStatus",
+                { packageId: pid },
+                function (result) {
+                    $("#id-generatePreinstallKit").val(result.status);
+                    if (result.status == "Generating") {
+                        self.setInterval("_queryPreinstallKitWorkflowStatus()", 5000);
+                    }
+                });
+        }
+
+        function _generatePreinstallKit(obj) {
+            var pid = $(obj).attr("packageId");
+            console.log(pid);
+            $.post("GeneratePreinstallKit",
+                { packageId: pid },
+                function (result) {
+                    self.setInterval(_queryPreinstallKitWorkflowStatus, 5000);
+                });
+        }
+
+        
+    </script>
