@@ -17,7 +17,6 @@ namespace DevCenterGallary.Common.Models
 
         public TargetPlatform TargetPlatform { get; set; }
 
-        private PreinstallKitStatus _preinstallKitStatus;
         public PreinstallKitStatus PreinstallKitStatus { get; set; }
     }
 

@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
-
 namespace DevCenterGallary.Common.Models
 {
     public class Product
     {
+        public int Id { get; set; }
+
         [JsonPropertyName("bigId")]
         public string BigId { get; set; }
 

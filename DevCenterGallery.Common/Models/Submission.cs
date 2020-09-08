@@ -6,8 +6,9 @@ namespace DevCenterGallary.Common.Models
 {
     public class Submission
     {
+        public int Id { get; set; }
         [JsonPropertyName("id")]
-        public string Id { get; set; }
+        public string SubmissionId { get; set; }
 
         [JsonPropertyName("friendlyName")]
         public string FriendlyName { get; set; }
