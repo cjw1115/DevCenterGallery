@@ -53,7 +53,14 @@
                     else if (item.PreinstallKitStatus == DevCenterGallary.Common.Models.PreinstallKitStatus.NeedToGenerate)
                     {
                         <tr>
-                            <td><a id="id-generatePreinstallKit" packageId="@item.PackageId" onclick="_generatePreinstallKit(this)" href="javascript:void(0);" >Generate Preinstall Kit</a></td>
+                            <td>
+                                <a id="id-generatePreinstallKit" packageId="@item.PackageId" onclick="_generatePreinstallKit(this)" href="javascript:void(0);" >Generate Preinstall Kit</a>
+                                <div id="id-generatingPreinstallKit" hidden="hidden" >
+                                    <span style="color:green" >Generating Preinstall Kit...</span>
+                                    <span style="font-size:12px">(This may take several minutes, page will reload after generating done)</span>
+                                </div>
+                                
+                            </td>
                         </tr>
                     }
                 </table>
@@ -62,7 +69,14 @@
         }
     </div>
     <script type="text/javascript">
-        self.setInterval(_queryPreinstallKitWorkflowStatus, 5000);
+        function _refreshGeneratingStatus() {
+            // Set the generating text at first;
+            $("#id-generatePreinstallKit").attr("hidden", "hidden");
+            $("#id-generatingPreinstallKit").removeAttr("hidden");
+
+            setTimeout(_queryPreinstallKitWorkflowStatus, 10000);
+        }
+
         function _queryPreinstallKitWorkflowStatus() {
             var pid = $("#id-generatePreinstallKit").attr("packageId");
             $.getJSON("QueryPreinstallKitWorkflowStatus",
@@ -70,7 +84,11 @@
                 function (result) {
                     $("#id-generatePreinstallKit").val(result.status);
                     if (result.status == "Generating") {
-                        self.setInterval("_queryPreinstallKitWorkflowStatus()", 5000);
+                        setTimeout(_queryPreinstallKitWorkflowStatus, 10000);
+                    }
+                    else {
+                        //Refresh page
+                        window.location.reload();
                     }
                 });
         }
@@ -81,9 +99,7 @@
             $.post("GeneratePreinstallKit",
                 { packageId: pid },
                 function (result) {
-                    self.setInterval(_queryPreinstallKitWorkflowStatus, 5000);
+                    _refreshGeneratingStatus();
                 });
         }
-
-        
     </script>
