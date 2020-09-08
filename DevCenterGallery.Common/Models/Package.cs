@@ -5,6 +5,8 @@ namespace DevCenterGallary.Common.Models
 {
     public class Package
     {
+        [JsonIgnore]
+        public int Id { get; set; }
         [JsonPropertyName("Id")]
         public string PackageId { get; set; }
         public string FileName { get; set; }
@@ -29,6 +31,8 @@ namespace DevCenterGallary.Common.Models
 
     public class Asset
     {
+        [JsonIgnore]
+        public int Id { get; set; }
         public string AssetType { get; set; }
         public FileInfo FileInfo { get; set; }
 
@@ -36,12 +40,16 @@ namespace DevCenterGallary.Common.Models
 
     public class FileInfo
     {
+        [JsonIgnore]
+        public int Id { get; set; }
         public string FileName { get; set; }
         public string SasUrl { get; set; }
     }
 
     public class TargetPlatform
     {
+        [JsonIgnore]
+        public int Id { get; set; }
         public string MinVersion { get; set; }
         public string PlatformName { get; set; }
 

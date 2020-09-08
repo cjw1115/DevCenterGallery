@@ -12,7 +12,7 @@
             @foreach (var item in Model.Submissions)
             {
                 <li class ="list-group-item">
-                    <a asp-action="Packages" asp-route-productId="@Model.BigId" asp-route-submissionId="@item.Id">@item.FriendlyName</a>
+                    <a asp-action="Packages" asp-route-productId="@Model.BigId" asp-route-submissionId="@item.SubmissionId">@item.FriendlyName</a>
                 </li>
                 }
         </ul>

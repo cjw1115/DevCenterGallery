@@ -83,7 +83,7 @@ namespace DevCenterGallery.Web.Controllers
         public IActionResult Packages(string productId, string submissionId)
         {
             var product = _products.FirstOrDefault(m => m.BigId == productId);
-            var submission = product.Submissions.FirstOrDefault(m => m.Id == submissionId);
+            var submission = product.Submissions.FirstOrDefault(m => m.SubmissionId == submissionId);
             ViewData["productId"] = productId;
             ViewData["submissionId"] = submissionId;
             ViewData["productName"] = product.Name;
@@ -143,7 +143,7 @@ namespace DevCenterGallery.Web.Controllers
                     product.Submissions = await _storeService.GetSubmissionsAsync(product.BigId);
                     foreach (var submission in product.Submissions)
                     {
-                        submission.Packages = await _storeService.GetPackagesAsync(product.BigId, submission.Id);
+                        submission.Packages = await _storeService.GetPackagesAsync(product.BigId, submission.SubmissionId);
                     }
                 }
                 var productsStr = System.Text.Json.JsonSerializer.Serialize(products);

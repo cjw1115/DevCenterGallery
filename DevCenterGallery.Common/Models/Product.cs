@@ -4,8 +4,8 @@ namespace DevCenterGallary.Common.Models
 {
     public class Product
     {
+        [JsonIgnore]
         public int Id { get; set; }
-
         [JsonPropertyName("bigId")]
         public string BigId { get; set; }
 
