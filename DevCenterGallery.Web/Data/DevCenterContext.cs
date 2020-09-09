@@ -1,5 +1,6 @@
 ﻿using DevCenterGallary.Common.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,9 +14,7 @@ namespace DevCenterGallery.Web.Data
         public DbSet<Submission> Submissions { get; set; }
         public DbSet<Package> Packages { get; set; }
 
-        public DevCenterContext(DbContextOptions<DevCenterContext> options)
-            : base(options)
-        {
-        }
+        protected override void OnConfiguring(DbContextOptionsBuilder options)
+            => options.UseSqlite("Data Source=devcenter.db");
     }
 }

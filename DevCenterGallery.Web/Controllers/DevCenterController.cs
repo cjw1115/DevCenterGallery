@@ -10,6 +10,8 @@ using DevCenterGallary.Common.Services;
 using DevCenterGallary.Common.Models;
 using System.IO;
 using System.Threading;
+using DevCenterGallery.Web.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace DevCenterGallery.Web.Controllers
 {
@@ -18,75 +20,58 @@ namespace DevCenterGallery.Web.Controllers
         private readonly ILogger<DevCenterController> _logger;
         private StoreService _storeService;
         private ICookieService _cookieService;
+        private DevCenterContext _dbContext;
 
-        public DevCenterController(ILogger<DevCenterController> logger)
+        public DevCenterController(ILogger<DevCenterController> logger, DevCenterContext dbContext)
         {
             _logger = logger;
+            _dbContext = dbContext;
+
             _cookieService = new PersonalCookieService();
             _storeService = new StoreService(_cookieService);
-
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            //_refreshProductsJob();
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-
-            _prepareData();
-        }
-
-        private List<Product> _products;
-        private void _prepareData()
-        {
-            _products = new List<Product>();
-            try
-            {
-                string productsStr;
-                var productsFileStream = _getProductFile();
-                StreamReader reader = new StreamReader(productsFileStream);
-                productsStr = reader.ReadToEnd();
-                try
-                {
-                    _products.AddRange(System.Text.Json.JsonSerializer.Deserialize<IList<Product>>(productsStr));
-                }
-                catch
-                {
-
-                }
-                productsFileStream.Close();
-            }
-            catch
-            {
-            }
-        }
-        private Stream _getProductFile()
-        {
-            var productsDirStr = Path.Combine(Directory.GetCurrentDirectory(), "Products");
-            var productsDir = Directory.CreateDirectory(productsDirStr);
-            if (!productsDir.Exists)
-            {
-                productsDir.Create();
-            }
-            var productFileStr = Path.Combine(productsDirStr, "Products.json");
-            return System.IO.File.Open(productFileStr, FileMode.OpenOrCreate, FileAccess.ReadWrite);
         }
 
         public IActionResult Products()
         {
-            return View("Products", _products);
+            return View("Products", _dbContext.Products.ToList());
         }
 
         public IActionResult Submissions(string productId)
         {
-            var product = _products.FirstOrDefault(m => m.BigId == productId);
+            var product = _dbContext.Products.Include(m => m.Submissions).Where(m => m.BigId == productId).FirstOrDefault();
             ViewData["productId"] = productId;
             return View("Submissions", product);
         }
 
         public IActionResult Packages(string productId, string submissionId)
         {
-            var product = _products.FirstOrDefault(m => m.BigId == productId);
-            var submission = product.Submissions.FirstOrDefault(m => m.SubmissionId == submissionId);
+            var product = _dbContext.Products.Where(m => m.BigId == productId).FirstOrDefault();
             ViewData["productId"] = productId;
-            ViewData["submissionId"] = submissionId;
             ViewData["productName"] = product.Name;
+            ViewData["submissionId"] = submissionId;
+
+            var submission = _dbContext.Submissions.Include(m => m.Packages).FirstOrDefault(m => m.SubmissionId == submissionId);
+            var pacakges = new List<Package>();
+            if (submission != null)
+            {
+                foreach (var item in submission.Packages)
+                {
+                    var pack = _dbContext.Packages
+                        .Include(m => m.Assets).ThenInclude(m => m.FileInfo)
+                        .Include(m => m.TargetPlatform)
+                        .Include(m => m.PackgeFileInfo)
+                        .Where(m => m.PackageId == item.PackageId).FirstOrDefault();
+
+                    pack.PackgeFileInfo = pack.Assets?.FirstOrDefault(m => m.AssetType == "UAPPreinstalledBinary")?.FileInfo;
+                    pack.PreinstallKitStatus = pack.PackgeFileInfo != null ? PreinstallKitStatus.Ready : PreinstallKitStatus.NeedToGenerate;
+
+                    if (pacakges != null)
+                    {
+                        pacakges.Add(pack);
+                    }
+                }
+                submission.Packages = pacakges;
+            }
             return View("Packages", submission);
         }
 
@@ -98,7 +83,7 @@ namespace DevCenterGallery.Web.Controllers
             return Json(new { status = PreinstallKitStatus.Generating.ToString() });
         }
 
-        public async Task<JsonResult> QueryPreinstallKitWorkflowStatus(string packageId)
+        public async Task<JsonResult> QueryPreinstallKitWorkflowStatus(string productId, string submissionId, string packageId)
         {
             await _storeService.PrepareCookie();
             var workflow = await _storeService.QueryPreinstallKitWorkflowStatus(packageId);
@@ -111,6 +96,14 @@ namespace DevCenterGallery.Web.Controllers
                     break;
                 case WorkflowState.GeneratePreinstallPackageComplete:
                     preinstallKitStatus = PreinstallKitStatus.Ready;
+                    var package = await _storeService.GetPackagesAsync(productId, submissionId);
+                    var submission = _dbContext.Submissions.Include(m => m.Packages).FirstOrDefault(m => m.SubmissionId == submissionId);
+                    submission.Packages.Clear();
+                    foreach (var item in package)
+                    {
+                        submission.Packages.Add(item);
+                    }
+                    _dbContext.SaveChanges();
                     break;
                 case WorkflowState.GeneratePreinstallPackageFailed:
                     preinstallKitStatus = PreinstallKitStatus.NeedToGenerate;
@@ -118,7 +111,7 @@ namespace DevCenterGallery.Web.Controllers
                 default:
                     break;
             }
-            return Json(new { status = preinstallKitStatus.ToString()});
+            return Json(new { status = preinstallKitStatus.ToString() });
         }
 
         public IActionResult Privacy()
@@ -131,32 +124,13 @@ namespace DevCenterGallery.Web.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
-
-        private async Task _refreshProductsJob()
+        [HttpPost]
+        public IActionResult Clean()
         {
-            try
-            {
-                await _storeService.PrepareCookie();
-                var products = await _storeService.GetProductsAsync();
-                foreach (var product in products)
-                {
-                    product.Submissions = await _storeService.GetSubmissionsAsync(product.BigId);
-                    foreach (var submission in product.Submissions)
-                    {
-                        submission.Packages = await _storeService.GetPackagesAsync(product.BigId, submission.SubmissionId);
-                    }
-                }
-                var productsStr = System.Text.Json.JsonSerializer.Serialize(products);
-                using (StreamWriter writer = new StreamWriter(_getProductFile()))
-                {
-                    writer.Write(productsStr);
-                }
-            }
-            catch
-            {
-
-            }
-            
+            var products = _dbContext.Products.ToList();
+            _dbContext.RemoveRange(products);
+            _dbContext.SaveChanges();
+            return View("Product");
         }
     }
 }

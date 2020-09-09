@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using DevCenterGallery.Web.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -25,8 +20,8 @@ namespace DevCenterGallery.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
-            services.AddDbContext<Data.DevCenterContext>(options => 
-                options.UseSqlite(Configuration.GetConnectionString("DevCenterContext")));
+            services.AddDbContext<DevCenterContext>();
+            services.AddTimedJob();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -55,6 +50,7 @@ namespace DevCenterGallery.Web
                     name: "default",
                     pattern: "{controller=DevCenter}/{action=Products}/{id?}");
             });
+            app.UseTimedJob();
         }
     }
 }

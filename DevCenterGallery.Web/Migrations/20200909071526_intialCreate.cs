@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace DevCenterGallery.Web.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class intialCreate : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -37,6 +37,20 @@ namespace DevCenterGallery.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TargetPlatform",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    MinVersion = table.Column<string>(nullable: true),
+                    PlatformName = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TargetPlatform", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Submissions",
                 columns: table => new
                 {
@@ -61,6 +75,44 @@ namespace DevCenterGallery.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Packages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    PackageId = table.Column<string>(nullable: true),
+                    FileName = table.Column<string>(nullable: true),
+                    PackageVersion = table.Column<string>(nullable: true),
+                    Architecture = table.Column<string>(nullable: true),
+                    PackgeFileInfoId = table.Column<int>(nullable: true),
+                    TargetPlatformId = table.Column<int>(nullable: true),
+                    PreinstallKitStatus = table.Column<int>(nullable: false),
+                    SubmissionId = table.Column<int>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Packages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Packages_FileInfo_PackgeFileInfoId",
+                        column: x => x.PackgeFileInfoId,
+                        principalTable: "FileInfo",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Packages_Submissions_SubmissionId",
+                        column: x => x.SubmissionId,
+                        principalTable: "Submissions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Packages_TargetPlatform_TargetPlatformId",
+                        column: x => x.TargetPlatformId,
+                        principalTable: "TargetPlatform",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Asset",
                 columns: table => new
                 {
@@ -79,55 +131,8 @@ namespace DevCenterGallery.Web.Migrations
                         principalTable: "FileInfo",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Packages",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    PackageId = table.Column<string>(nullable: true),
-                    FileName = table.Column<string>(nullable: true),
-                    PackageVersion = table.Column<string>(nullable: true),
-                    Architecture = table.Column<string>(nullable: true),
-                    PcakgeFileInfoId = table.Column<int>(nullable: true),
-                    TargetPlatformId = table.Column<int>(nullable: true),
-                    PreinstallKitStatus = table.Column<int>(nullable: false),
-                    SubmissionId = table.Column<int>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Packages", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Packages_FileInfo_PcakgeFileInfoId",
-                        column: x => x.PcakgeFileInfoId,
-                        principalTable: "FileInfo",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Packages_Submissions_SubmissionId",
-                        column: x => x.SubmissionId,
-                        principalTable: "Submissions",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "TargetPlatform",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    MinVersion = table.Column<string>(nullable: true),
-                    PlatformName = table.Column<string>(nullable: true),
-                    PackageId = table.Column<int>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TargetPlatform", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_TargetPlatform_Packages_PackageId",
+                        name: "FK_Asset_Packages_PackageId",
                         column: x => x.PackageId,
                         principalTable: "Packages",
                         principalColumn: "Id",
@@ -145,9 +150,9 @@ namespace DevCenterGallery.Web.Migrations
                 column: "PackageId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Packages_PcakgeFileInfoId",
+                name: "IX_Packages_PackgeFileInfoId",
                 table: "Packages",
-                column: "PcakgeFileInfoId");
+                column: "PackgeFileInfoId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Packages_SubmissionId",
@@ -163,47 +168,18 @@ namespace DevCenterGallery.Web.Migrations
                 name: "IX_Submissions_ProductId",
                 table: "Submissions",
                 column: "ProductId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TargetPlatform_PackageId",
-                table: "TargetPlatform",
-                column: "PackageId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Asset_Packages_PackageId",
-                table: "Asset",
-                column: "PackageId",
-                principalTable: "Packages",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Packages_TargetPlatform_TargetPlatformId",
-                table: "Packages",
-                column: "TargetPlatformId",
-                principalTable: "TargetPlatform",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Packages_FileInfo_PcakgeFileInfoId",
-                table: "Packages");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_TargetPlatform_Packages_PackageId",
-                table: "TargetPlatform");
-
             migrationBuilder.DropTable(
                 name: "Asset");
 
             migrationBuilder.DropTable(
-                name: "FileInfo");
+                name: "Packages");
 
             migrationBuilder.DropTable(
-                name: "Packages");
+                name: "FileInfo");
 
             migrationBuilder.DropTable(
                 name: "Submissions");

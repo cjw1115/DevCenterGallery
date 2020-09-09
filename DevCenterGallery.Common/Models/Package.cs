@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace DevCenterGallary.Common.Models
@@ -12,10 +13,11 @@ namespace DevCenterGallary.Common.Models
         public string FileName { get; set; }
         public string PackageVersion { get; set; }
         public string Architecture { get; set; }
-        public IList<Asset> Assets { get; set; }
-        public IList<TargetPlatform> RuntimeTargetPlatforms { get; set; }
+        public List<Asset> Assets { get; set; }
+        [NotMapped]
+        public List<TargetPlatform> RuntimeTargetPlatforms { get; set; }
         
-        public FileInfo PcakgeFileInfo { get; set; }
+        public FileInfo PackgeFileInfo { get; set; }
 
         public TargetPlatform TargetPlatform { get; set; }
 

@@ -8,6 +8,7 @@ namespace DevCenterGallary.Common.Models
     {
         [JsonIgnore]
         public int Id { get; set; }
+
         [JsonPropertyName("id")]
         public string SubmissionId { get; set; }
 
@@ -23,6 +24,6 @@ namespace DevCenterGallary.Common.Models
         [JsonPropertyName("releaseRank")]
         public int ReleaseRank { get; set; }
 
-        public IList<Package> Packages { get; set; } 
+        public List<Package> Packages { get; set; } 
     }
 }

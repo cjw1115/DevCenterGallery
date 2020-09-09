@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DevCenterGallery.Web.Migrations
 {
     [DbContext(typeof(DevCenterContext))]
-    [Migration("20200908163904_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20200909071526_intialCreate")]
+    partial class intialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -77,7 +77,7 @@ namespace DevCenterGallery.Web.Migrations
                     b.Property<string>("PackageVersion")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("PcakgeFileInfoId")
+                    b.Property<int?>("PackgeFileInfoId")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("PreinstallKitStatus")
@@ -91,7 +91,7 @@ namespace DevCenterGallery.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PcakgeFileInfoId");
+                    b.HasIndex("PackgeFileInfoId");
 
                     b.HasIndex("SubmissionId");
 
@@ -160,15 +160,10 @@ namespace DevCenterGallery.Web.Migrations
                     b.Property<string>("MinVersion")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("PackageId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("PlatformName")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("PackageId");
 
                     b.ToTable("TargetPlatform");
                 });
@@ -186,9 +181,9 @@ namespace DevCenterGallery.Web.Migrations
 
             modelBuilder.Entity("DevCenterGallary.Common.Models.Package", b =>
                 {
-                    b.HasOne("DevCenterGallary.Common.Models.FileInfo", "PcakgeFileInfo")
+                    b.HasOne("DevCenterGallary.Common.Models.FileInfo", "PackgeFileInfo")
                         .WithMany()
-                        .HasForeignKey("PcakgeFileInfoId");
+                        .HasForeignKey("PackgeFileInfoId");
 
                     b.HasOne("DevCenterGallary.Common.Models.Submission", null)
                         .WithMany("Packages")
@@ -204,13 +199,6 @@ namespace DevCenterGallery.Web.Migrations
                     b.HasOne("DevCenterGallary.Common.Models.Product", null)
                         .WithMany("Submissions")
                         .HasForeignKey("ProductId");
-                });
-
-            modelBuilder.Entity("DevCenterGallary.Common.Models.TargetPlatform", b =>
-                {
-                    b.HasOne("DevCenterGallary.Common.Models.Package", null)
-                        .WithMany("RuntimeTargetPlatforms")
-                        .HasForeignKey("PackageId");
                 });
 #pragma warning restore 612, 618
         }

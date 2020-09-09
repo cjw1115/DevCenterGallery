@@ -31,12 +31,12 @@ namespace DevCenterGallary.Common.Services
 
         class ProductsModel
         {
-            public IList<Product> productList { get; set; }
+            public List<Product> productList { get; set; }
         }
 
         class PackagesModel
         {
-            public IList<Package> Packages { get; set; }
+            public List<Package> Packages { get; set; }
         }
 
         private HttpService _httpService = new HttpService();
@@ -63,7 +63,7 @@ namespace DevCenterGallary.Common.Services
             }
         }
 
-        public async Task<IList<Product>> GetProductsAsync()
+        public async Task<List<Product>> GetProductsAsync()
         {
             try
             {
@@ -85,13 +85,13 @@ namespace DevCenterGallary.Common.Services
             return new List<Product>(0);
         }
 
-        public async Task<IList<Submission>> GetSubmissionsAsync(string productId)
+        public async Task<List<Submission>> GetSubmissionsAsync(string productId)
         {
             try
             {
                 _bigId = productId;
                 var stringContent = await _httpService.SendRequestAndGetString(_getSubmissionsUri, Encoding.UTF8, HttpMethod.Get);
-                var submissions = JsonSerializer.Deserialize<IList<Submission>>(stringContent);
+                var submissions = JsonSerializer.Deserialize<List<Submission>>(stringContent);
                 return submissions.OrderByDescending(m => m.ReleaseRank).ToList();
             }
             catch
@@ -100,20 +100,20 @@ namespace DevCenterGallary.Common.Services
             return new List<Submission>(0);
         }
 
-        public async Task<IList<Package>> GetPackagesAsync(string productId, string submissionId)
+        public async Task<List<Package>> GetPackagesAsync(string productId, string submissionId)
         {
             try
             {
                 _bigId = productId;
                 _submissonId = submissionId;
                 var stringContent = await _httpService.SendRequestAndGetString(_getPackagesUri, Encoding.UTF8, HttpMethod.Get);
-                var submissions = JsonSerializer.Deserialize<IList<PackagesModel>>(stringContent);
+                var submissions = JsonSerializer.Deserialize<List<PackagesModel>>(stringContent);
                 if (submissions != null && submissions.Count > 0)
                 {
                     foreach (var item in submissions[0].Packages)
                     {
-                        item.PcakgeFileInfo = item.Assets.FirstOrDefault(m => m.AssetType == "UAPPreinstalledBinary")?.FileInfo;
-                        item.PreinstallKitStatus = item.PcakgeFileInfo != null ? PreinstallKitStatus.Ready : PreinstallKitStatus.NeedToGenerate;
+                        item.PackgeFileInfo = item.Assets?.FirstOrDefault(m => m.AssetType == "UAPPreinstalledBinary")?.FileInfo;
+                        item.PreinstallKitStatus = item.PackgeFileInfo != null ? PreinstallKitStatus.Ready : PreinstallKitStatus.NeedToGenerate;
                         item.TargetPlatform = item.RuntimeTargetPlatforms.First();
                     }
                     return submissions[0].Packages;
@@ -137,7 +137,7 @@ namespace DevCenterGallary.Common.Services
             var stringContent = await _httpService.SendRequestAndGetString(_queryPreinstallKitWorkflowUri, Encoding.UTF8, HttpMethod.Get);
             JsonSerializerOptions options = new JsonSerializerOptions();
             options.Converters.Add(new JsonStringEnumConverter());
-            var workflows = JsonSerializer.Deserialize<IList<Workflow>>(stringContent, options);
+            var workflows = JsonSerializer.Deserialize<List<Workflow>>(stringContent, options);
             if (workflows != null && workflows.Count > 0)
             {
                 return workflows[0];
@@ -153,11 +153,11 @@ namespace DevCenterGallary.Common.Services
             return JsonSerializer.Deserialize<CustomerGroup>(strContent);
         }
 
-        public async Task<IList<CustomerGroup>> GetGroups()
+        public async Task<List<CustomerGroup>> GetGroups()
         {
             var uri = $"{_hostUri}dashboard/monetization/group-management/api/groups";
             var strContent = await _httpService.SendRequestAndGetString(uri, Encoding.UTF8, HttpMethod.Get);
-            return JsonSerializer.Deserialize<IList<CustomerGroup>>(strContent);
+            return JsonSerializer.Deserialize<List<CustomerGroup>>(strContent);
         }
 
         public async Task<CustomerGroup> UpdateGroup(string groupId, UpdateCustomerGroup group)

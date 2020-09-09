@@ -6,6 +6,7 @@ namespace DevCenterGallary.Common.Models
     {
         [JsonIgnore]
         public int Id { get; set; }
+
         [JsonPropertyName("bigId")]
         public string BigId { get; set; }
 
@@ -15,6 +16,6 @@ namespace DevCenterGallary.Common.Models
         [JsonPropertyName("logoUri")]
         public string LogoUri { get; set; }
 
-        public IList<Submission> Submissions { get; set; }
+        public List<Submission> Submissions { get; set; }
     }
 }

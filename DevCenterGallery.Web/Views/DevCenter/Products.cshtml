@@ -2,6 +2,11 @@
 @{
     ViewData["Title"] = "Products";
 }
+<div>
+    <form asp-action="Clean" method="post">
+        <input type="submit" value="Clean"/>
+    </form>
+</div>
     <div class="text-left">
         <ul class="list-group">
             @foreach (var item in Model)
