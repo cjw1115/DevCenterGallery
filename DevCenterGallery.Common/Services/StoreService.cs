@@ -139,6 +139,25 @@ namespace DevCenterGallary.Common.Services
             return null;
         }
 
+        public async Task<List<Product>> GetProductsFullInfoAsync()
+        {
+            var products = await GetProductsAsync();
+            foreach (var product in products)
+            {
+                product.Submissions = await GetSubmissionsAsync(product.BigId);
+                foreach (var submission in product.Submissions)
+                {
+                    submission.Product = product;
+                    submission.Packages = await GetPackagesAsync(product.BigId, submission.SubmissionId);
+                    foreach (var package in submission.Packages)
+                    {
+                        package.Submission = submission;
+                    }
+                }
+            }
+            return products;
+        }
+
         #region Customer Group
         public async Task<CustomerGroup> GetGroupInfo(string groupId)
         {

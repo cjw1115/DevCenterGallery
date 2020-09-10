@@ -31,6 +31,27 @@ namespace DevCenterGallery.Web.Controllers
             _storeService = new StoreService(_cookieService);
         }
 
+        [HttpPost]
+        public async Task<JsonResult> SyncDevCenter(string productId, string submissionsId, string packageId)
+        {
+            string errorMsg = string.Empty;
+            try
+            {
+                await _storeService.PrepareCookie();
+                var products = await _storeService.GetProductsFullInfoAsync();
+                var oldProducts = _dbContext.Products.ToList();
+                _dbContext.RemoveRange(oldProducts);
+                _dbContext.SaveChanges();
+                _dbContext.Products.AddRange(products);
+                _dbContext.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                errorMsg = e.Message;
+            }
+            var result = new { result = string.IsNullOrEmpty(errorMsg) ? 200 : 400, msg = errorMsg };
+            return Json(result);
+        }
         public IActionResult Products()
         {
             return View("Products", _dbContext.Products.ToList());

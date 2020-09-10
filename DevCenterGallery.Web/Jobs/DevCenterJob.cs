@@ -28,20 +28,7 @@ namespace DevCenterGallery.Web.Jobs
             try
             {
                 await _storeService.PrepareCookie();
-                var products = await _storeService.GetProductsAsync();
-                foreach (var product in products)
-                {
-                    product.Submissions = await _storeService.GetSubmissionsAsync(product.BigId);
-                    foreach (var submission in product.Submissions)
-                    {
-                        submission.Product = product;
-                        submission.Packages = await _storeService.GetPackagesAsync(product.BigId, submission.SubmissionId);
-                        foreach (var package in submission.Packages)
-                        {
-                            package.Submission = submission;
-                        }
-                    }
-                }
+                var products = await _storeService.GetProductsFullInfoAsync();
                 var oldProducts = _dbContext.Products.ToList();
                 _dbContext.RemoveRange(oldProducts);
                 _dbContext.SaveChanges();
@@ -50,7 +37,6 @@ namespace DevCenterGallery.Web.Jobs
             }
             catch
             {
-
             }
         }
     }
