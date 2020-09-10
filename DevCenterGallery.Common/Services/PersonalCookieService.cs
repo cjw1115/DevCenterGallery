@@ -1,5 +1,6 @@
 ﻿using AngleSharp.Html.Parser;
-using DevCenterGallary.Common.Models;
+using DevCenterGalley.Common.Models;
+using DevCenterGallery.Common.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,41 +12,15 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace DevCenterGallary.Common.Services
+namespace DevCenterGalley.Common.Services
 {
-    public class PersonalCookieService: ICookieService
+    public class PersonalCookieService: BasicCookieService
     {
         private HttpService _httpService = new HttpService(false);
 
-        private string COOKIE_KEY = $"DEV-CENTER-COOKIE-{nameof(PersonalCookieService)}";
-
-        private Tuple<string,string> _getAccountInfo()
+        public async override Task<string> GetDevCenterCookie()
         {
-            using (var configStream = File.Open(Path.Combine(Directory.GetCurrentDirectory(),"DevCenterConfig.json"), FileMode.Open, FileAccess.Read))
-            {
-                var buffer = new byte[configStream.Length];
-                configStream.Read(buffer, 0, buffer.Length);
-                var configJson = JsonDocument.Parse(Encoding.UTF8.GetString(buffer));
-                string usernmae = string.Empty;
-                string password = string.Empty;
-                foreach (var item in configJson.RootElement.EnumerateObject())
-                {
-                    if(item.Name=="username")
-                    {
-                        usernmae = item.Value.GetString();
-                    }
-                    if (item.Name == "password")
-                    {
-                        password = item.Value.GetString();
-                    }
-                };
-                return Tuple.Create(usernmae, password);
-            }   
-        }
-
-        public async Task<string> GetDevCenterCookie()
-        {
-            var (username, password) = _getAccountInfo();
+            var (username, password) = GetAccountInfo();
             Debug.Assert(!string.IsNullOrEmpty(username));
             Debug.Assert(!string.IsNullOrEmpty(password));
 

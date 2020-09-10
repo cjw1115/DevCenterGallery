@@ -16,7 +16,7 @@ namespace DevCenterGallery.Web.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "3.1.7");
 
-            modelBuilder.Entity("DevCenterGallary.Common.Models.Asset", b =>
+            modelBuilder.Entity("DevCenterGalley.Common.Models.Asset", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -36,7 +36,7 @@ namespace DevCenterGallery.Web.Migrations
                     b.ToTable("Asset");
                 });
 
-            modelBuilder.Entity("DevCenterGallary.Common.Models.FileInfo", b =>
+            modelBuilder.Entity("DevCenterGalley.Common.Models.FileInfo", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -59,7 +59,7 @@ namespace DevCenterGallery.Web.Migrations
                     b.ToTable("FileInfo");
                 });
 
-            modelBuilder.Entity("DevCenterGallary.Common.Models.Package", b =>
+            modelBuilder.Entity("DevCenterGalley.Common.Models.Package", b =>
                 {
                     b.Property<string>("PackageId")
                         .HasColumnType("TEXT");
@@ -84,7 +84,7 @@ namespace DevCenterGallery.Web.Migrations
                     b.ToTable("Packages");
                 });
 
-            modelBuilder.Entity("DevCenterGallary.Common.Models.Product", b =>
+            modelBuilder.Entity("DevCenterGalley.Common.Models.Product", b =>
                 {
                     b.Property<string>("BigId")
                         .HasColumnType("TEXT");
@@ -100,7 +100,7 @@ namespace DevCenterGallery.Web.Migrations
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("DevCenterGallary.Common.Models.Submission", b =>
+            modelBuilder.Entity("DevCenterGalley.Common.Models.Submission", b =>
                 {
                     b.Property<string>("SubmissionId")
                         .HasColumnType("TEXT");
@@ -128,7 +128,7 @@ namespace DevCenterGallery.Web.Migrations
                     b.ToTable("Submissions");
                 });
 
-            modelBuilder.Entity("DevCenterGallary.Common.Models.TargetPlatform", b =>
+            modelBuilder.Entity("DevCenterGalley.Common.Models.TargetPlatform", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -151,45 +151,45 @@ namespace DevCenterGallery.Web.Migrations
                     b.ToTable("TargetPlatform");
                 });
 
-            modelBuilder.Entity("DevCenterGallary.Common.Models.Asset", b =>
+            modelBuilder.Entity("DevCenterGalley.Common.Models.Asset", b =>
                 {
-                    b.HasOne("DevCenterGallary.Common.Models.Package", "Package")
+                    b.HasOne("DevCenterGalley.Common.Models.Package", "Package")
                         .WithMany("Assets")
                         .HasForeignKey("PackageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("DevCenterGallary.Common.Models.FileInfo", b =>
+            modelBuilder.Entity("DevCenterGalley.Common.Models.FileInfo", b =>
                 {
-                    b.HasOne("DevCenterGallary.Common.Models.Asset", "Asset")
+                    b.HasOne("DevCenterGalley.Common.Models.Asset", "Asset")
                         .WithOne("FileInfo")
-                        .HasForeignKey("DevCenterGallary.Common.Models.FileInfo", "AssetId")
+                        .HasForeignKey("DevCenterGalley.Common.Models.FileInfo", "AssetId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("DevCenterGallary.Common.Models.Package", b =>
+            modelBuilder.Entity("DevCenterGalley.Common.Models.Package", b =>
                 {
-                    b.HasOne("DevCenterGallary.Common.Models.Submission", "Submission")
+                    b.HasOne("DevCenterGalley.Common.Models.Submission", "Submission")
                         .WithMany("Packages")
                         .HasForeignKey("SubmissionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("DevCenterGallary.Common.Models.Submission", b =>
+            modelBuilder.Entity("DevCenterGalley.Common.Models.Submission", b =>
                 {
-                    b.HasOne("DevCenterGallary.Common.Models.Product", "Product")
+                    b.HasOne("DevCenterGalley.Common.Models.Product", "Product")
                         .WithMany("Submissions")
                         .HasForeignKey("ProductBigId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("DevCenterGallary.Common.Models.TargetPlatform", b =>
+            modelBuilder.Entity("DevCenterGalley.Common.Models.TargetPlatform", b =>
                 {
-                    b.HasOne("DevCenterGallary.Common.Models.Package", "Package")
+                    b.HasOne("DevCenterGalley.Common.Models.Package", "Package")
                         .WithMany("RuntimeTargetPlatforms")
                         .HasForeignKey("PackageId")
                         .OnDelete(DeleteBehavior.Cascade)

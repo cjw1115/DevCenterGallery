@@ -1,67 +1,38 @@
-﻿@model IList<DevCenterGallary.Common.Models.Product>
+﻿@model IList<DevCenterGalley.Common.Models.Product>
 @{
     ViewData["Title"] = "Products";
 }
-<ol class="breadcrumb">
+<ol class="breadcrumb" >
     <li class="breadcrumb-item active"><a href="#">Products</a></li>
 </ol>
+<div class="text-left" style="margin-bottom:6px">
+    <input id="id-forceSync" productId="" submissionId="" type="button" class="syncButton" onclick="forceSync()" value="Sync Products" />
+</div>
 <div class="text-left">
     <ul class="list-group">
         @foreach (var item in Model)
         {
             <li class="list-group-item">
-                <a asp-action="Submissions" asp-route-productId="@item.BigId">@item.Name</a>
+                <img class="appIcon" src="@item.LogoUri"/>
+                <a class="appTitle" asp-action="Submissions" asp-route-productId="@item.BigId">@item.Name</a>
                 <input type="hidden" value="@item.BigId" />
             </li>
         }
     </ul>
 </div>
-<div class="text-right">
-    <input id="id-forceSync" type="button" class="btn btn-primary" onclick="forceSync()" value="Force Sync Microsft Dev Center" />
-</div>
-
-<div id="id-overlay" hidden="hidden" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;">
-    <div style="width:100%;height:100%;position:fixed; background-color:rgba(0,0,0,0.5)"></div>
-    <svg id="id-svgRefresh" font-size="6em" width="1em" height="1em" viewBox="0 0 16 16" class=" bi bi-arrow-repeat" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        margin: auto;">
-        <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"></path>
-        <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"></path>
-    </svg>
-</div>
 
 <style type="text/css">
-    #id-svgRefresh{
-      animation:turn 1.4s linear infinite;
+    .appIcon{
+        height: 24px;
+        width: 24px;
+        display: inline-block;
+        color: transparent;
     }
-    @@keyframes turn{
-      0%{-webkit-transform:rotate(0deg);}
-      25%{-webkit-transform:rotate(90deg);}
-      50%{-webkit-transform:rotate(180deg);}
-      75%{-webkit-transform:rotate(270deg);}
-      100%{-webkit-transform:rotate(360deg);}
+    .appTitle{
+        display: inline-block;
+        color: #000;
+        padding: 10px 16px;
+        font-size:15px;
+        font-family:'Segoe UI'
     }
 </style>
-<script type="text/javascript">
-    function forceSync() {
-
-        $("#id-overlay").attr("hidden", false);
-        $("#id-forceSync").val("Sync ......");
-
-        $.post("DevCenter/SyncDevCenter",
-            {},
-            function (result) {
-                if (result.result != 200) {
-                    console.log(result.msg);
-                } else {
-                    console.log("Sync successfully")
-                }
-                
-                window.location.reload();
-            });
-    }
-</script>

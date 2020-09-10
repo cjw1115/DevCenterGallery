@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Net;
 using System.IO;
 
-namespace DevCenterGallary.Common.Services
+namespace DevCenterGalley.Common.Services
 {
     public class HttpService
     {

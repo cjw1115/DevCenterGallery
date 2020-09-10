@@ -341,3 +341,4 @@ healthchecksdb
 /DevCenterGallery.Web/DevCenterConfig.json
 /DevCenterGallery.Web/Products/Products.json
 /DevCenterGallery.Web/devcenter.db
+/DevCenterGallery.Common/Services/CookieService.cs

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - DevCenterGallery.Web</title>
+    <title>@ViewData["Title"] - Flight Gallery</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
@@ -21,9 +21,6 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="DevCenter" asp-action="Products">Flights</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="DevCenter" asp-action="Privacy">Privacy</a>
-                        </li>
                     </ul>
                 </div>
             </div>
@@ -37,12 +34,93 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2020 - DevCenterGallery.Web - <a asp-area="" asp-controller="DevCenter" asp-action="Privacy">Privacy</a>
+            &copy; 2020 - Flight Gallery
         </div>
     </footer>
+
+    <div id="id-overlay" hidden="hidden" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;">
+        <div style="width:100%;height:100%;position:fixed; background-color:rgba(0,0,0,0.5)"></div>
+        <svg id="id-svgRefresh" font-size="6em" width="1em" height="1em" viewBox="0 0 16 16" class=" bi bi-arrow-repeat" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        margin: auto;">
+            <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"></path>
+            <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"></path>
+        </svg>
+    </div>
+
+    <style type="text/css">
+        .syncButton{
+            border-color: #000;
+            width: 132px;
+            height: 36px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            font-size: 14px;
+            font-family:'Segoe UI'
+        }
+        #id-svgRefresh {
+            animation: turn 1.4s linear infinite;
+        }
+        .breadcrumb{
+            background:#e9ecef44;
+            border-radius:0
+        }
+        .breadcrumb-item{
+            color:#106ebe;
+        }
+        @@keyframes turn {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            25% {
+                -webkit-transform: rotate(90deg);
+            }
+
+            50% {
+                -webkit-transform: rotate(180deg);
+            }
+
+            75% {
+                -webkit-transform: rotate(270deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+    </style>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @RenderSection("Scripts", required: false)
+    <script type="text/javascript">
+        function forceSync() {
+
+            $("#id-overlay").attr("hidden", false);
+            $("#id-forceSync").val("Sync ......");
+            var prodId = $("#id-forceSync").attr("productId");
+            var subId = $("#id-forceSync").attr("submissionId");
+            var url = window.location.protocol + "//" + window.location.host;
+            $.post(url + "/DevCenter/SyncDevCenter",
+                {
+                    productId: prodId,
+                    submissionId: subId
+                },
+                function (result) {
+                    if (result.result != 200) {
+                        console.log(result.msg);
+                    } else {
+                        console.log("Sync successfully")
+                    }
+                    window.location.reload();
+                });
+        }
+    </script>
 </body>
 </html>

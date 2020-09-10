@@ -1,4 +1,4 @@
-﻿namespace DevCenterGallary.Common.Models
+﻿namespace DevCenterGalley.Common.Models
 {
     public enum WorkflowState
     {

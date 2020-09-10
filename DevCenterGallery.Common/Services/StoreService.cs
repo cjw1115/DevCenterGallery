@@ -2,14 +2,14 @@
 using System.Threading.Tasks;
 using System.Net.Http;
 using System.Text.Json;
-using DevCenterGallary.Common.Models;
+using DevCenterGalley.Common.Models;
 using System;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Text;
 using System.IO;
 
-namespace DevCenterGallary.Common.Services
+namespace DevCenterGalley.Common.Services
 {
     public class StoreService
     {
@@ -25,9 +25,35 @@ namespace DevCenterGallary.Common.Services
         private string _generatePreinstallKitUri => $"https://partner.microsoft.com/dashboard/packages/api/pkg/v2.0/packages/{_packageId}/assets/UAPPreinstalledBinary/generatePreinstall";
         private string _queryPreinstallKitWorkflowUri => $"https://partner.microsoft.com/dashboard/packages/api/pkg/v2.0/packages/{_packageId}/workflows";
 
-        private List<string> _productFilter = new List<string>
+        public List<string> ProductFilter 
         {
-        };
+            get
+            {
+                List<string> products = new List<string>();
+                using (var configStream = File.Open(Path.Combine(Directory.GetCurrentDirectory(), "DevCenterConfig.json"), FileMode.Open, FileAccess.Read))
+                {
+                    var buffer = new byte[configStream.Length];
+                    configStream.Read(buffer, 0, buffer.Length);
+                    var configJson = JsonDocument.Parse(Encoding.UTF8.GetString(buffer));
+                    string usernmae = string.Empty;
+                    string password = string.Empty;
+
+                    JsonElement productFilters = new JsonElement();
+                    foreach (var item in configJson.RootElement.EnumerateObject())
+                    {
+                        if (item.Name == "ProductFilter")
+                        {
+                            productFilters = item.Value;
+                        }
+                    }
+                    foreach (var item in productFilters.EnumerateArray())
+                    {
+                        products.Add(item.GetString());
+                    }
+                    return products;
+                }
+            }
+        }
 
         class ProductsModel
         {
@@ -71,7 +97,15 @@ namespace DevCenterGallary.Common.Services
                 var products = JsonSerializer.Deserialize<ProductsModel>(stringContent).productList.AsEnumerable();
                 if (!(_cookieService is PersonalCookieService))
                 {
-                    products = JsonSerializer.Deserialize<ProductsModel>(stringContent).productList.Where(m => _productFilter.Contains(m.BigId));
+                    var filters = ProductFilter;
+                    if(filters!=null&& filters.Count > 0)
+                    {
+                        products = JsonSerializer.Deserialize<ProductsModel>(stringContent).productList.Where(m => filters.Contains(m.BigId));
+                    }
+                    else
+                    {
+                        products = JsonSerializer.Deserialize<ProductsModel>(stringContent).productList;
+                    }
                 }
                 foreach (var item in products)
                 {

@@ -1,11 +1,8 @@
-﻿using DevCenterGallary.Common.Models;
-using DevCenterGallary.Common.Services;
+﻿using DevCenterGalley.Common.Services;
+using DevCenterGallery.Common.Services;
 using DevCenterGallery.Web.Data;
 using Pomelo.AspNetCore.TimedJob;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace DevCenterGallery.Web.Jobs
 {
@@ -18,7 +15,7 @@ namespace DevCenterGallery.Web.Jobs
         public DevCenterJob()
         {
             _dbContext = new DevCenterContext();
-            _cookieService = new PersonalCookieService();
+            _cookieService = new CookieService();
             _storeService = new StoreService(_cookieService);
         }
 

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace DevCenterGallary.Common.Services
+namespace DevCenterGalley.Common.Services
 {
     public interface ICookieService
     {

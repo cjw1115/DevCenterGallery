@@ -6,12 +6,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using DevCenterGallery.Web.Models;
-using DevCenterGallary.Common.Services;
-using DevCenterGallary.Common.Models;
-using System.IO;
-using System.Threading;
+using DevCenterGalley.Common.Services;
+using DevCenterGalley.Common.Models;
 using DevCenterGallery.Web.Data;
 using Microsoft.EntityFrameworkCore;
+using DevCenterGallery.Common.Services;
 
 namespace DevCenterGallery.Web.Controllers
 {
@@ -27,23 +26,29 @@ namespace DevCenterGallery.Web.Controllers
             _logger = logger;
             _dbContext = dbContext;
 
-            _cookieService = new PersonalCookieService();
+            _cookieService = new CookieService();
             _storeService = new StoreService(_cookieService);
         }
 
         [HttpPost]
-        public async Task<JsonResult> SyncDevCenter(string productId, string submissionsId, string packageId)
+        public async Task<JsonResult> SyncDevCenter(string productId, string submissionId)
         {
             string errorMsg = string.Empty;
             try
             {
                 await _storeService.PrepareCookie();
-                var products = await _storeService.GetProductsFullInfoAsync();
-                var oldProducts = _dbContext.Products.ToList();
-                _dbContext.RemoveRange(oldProducts);
-                _dbContext.SaveChanges();
-                _dbContext.Products.AddRange(products);
-                _dbContext.SaveChanges();
+                if (!string.IsNullOrEmpty(productId) && !string.IsNullOrEmpty(submissionId))
+                {
+                    await _syncPackages(productId, submissionId);
+                }
+                else if (!string.IsNullOrEmpty(productId))
+                {
+                    await _syncSubmissions(productId);
+                }
+                else
+                {
+                    await _syncProducts();
+                }
             }
             catch (Exception e)
             {
@@ -52,6 +57,86 @@ namespace DevCenterGallery.Web.Controllers
             var result = new { result = string.IsNullOrEmpty(errorMsg) ? 200 : 400, msg = errorMsg };
             return Json(result);
         }
+
+        private async Task<IList<Product>> _syncProducts()
+        {
+            var products = await _storeService.GetProductsAsync();
+            var oldProducts = _dbContext.Products.ToList();
+            foreach (var prod in products)
+            {
+                var oldProd = oldProducts.FirstOrDefault(m => m.BigId == prod.BigId);
+                if (oldProd == null)
+                {
+                    oldProducts.Add(prod);
+                }
+                else
+                {
+                    oldProd.LogoUri = prod.LogoUri;
+                    oldProd.Name = prod.Name;
+                }
+            }
+            _dbContext.Products.UpdateRange(oldProducts);
+            _dbContext.SaveChanges();
+            return oldProducts;
+        }
+
+        private async Task<IList<Submission>> _syncSubmissions(string productId)
+        {
+            var submissions = await _storeService.GetSubmissionsAsync(productId);
+            var product = _dbContext.Products.Include(m=>m.Submissions).FirstOrDefault(m => m.BigId == productId);
+            var oldSubmissions = product.Submissions;
+            foreach (var sub in submissions)
+            {
+                var oldSub = oldSubmissions.FirstOrDefault(m => m.SubmissionId == sub.SubmissionId);
+                if (oldSub == null)
+                {
+                    sub.Product= product;
+                    oldSubmissions.Add(sub);
+                }
+                else
+                {
+                    oldSub.FriendlyName = sub.FriendlyName;
+                    oldSub.PublishedDateTime = sub.PublishedDateTime;
+                    oldSub.ReleaseRank = sub.ReleaseRank;
+                    oldSub.UpdatedDateTime = sub.UpdatedDateTime;
+                }
+            }
+            _dbContext.Products.Update(product);
+            _dbContext.SaveChanges();
+            return oldSubmissions;
+        }
+
+        private async Task<IList<Package>> _syncPackages(string productId, string submissionId)
+        {
+            var packages = await _storeService.GetPackagesAsync(productId, submissionId);
+            var submission = _dbContext.Submissions.Include(m=>m.Packages).FirstOrDefault(m => m.SubmissionId == submissionId);
+            var oldPackages = submission.Packages;
+            foreach (var package in packages)
+            {
+                var oldPackage = oldPackages.FirstOrDefault(m => m.PackageId == package.PackageId);
+                if (oldPackage == null)
+                {   
+                    package.Submission = submission;
+                    oldPackages.Add(package);
+                }
+                else
+                {
+                    oldPackage.Architecture = package.Architecture;
+                    oldPackage.Assets = package.Assets;
+                    oldPackage.FileName = package.FileName;
+                    oldPackage.PackageVersion = package.PackageVersion;
+                    oldPackage.RuntimeTargetPlatforms = package.RuntimeTargetPlatforms;
+                    // Will be calculated when get package request.
+                    //oldPackage.TargetPlatform = package.TargetPlatform;
+                    //oldPackage.PackgeFileInfo = package.PackgeFileInfo;
+                    //oldPackage.PreinstallKitStatus = package.PreinstallKitStatus;
+                }
+            }
+            _dbContext.Submissions.Update(submission);
+            _dbContext.SaveChanges();
+            return packages;
+        }
+
         public IActionResult Products()
         {
             return View("Products", _dbContext.Products.ToList());
@@ -60,6 +145,7 @@ namespace DevCenterGallery.Web.Controllers
         public IActionResult Submissions(string productId)
         {
             var product = _dbContext.Products.Include(m => m.Submissions).Where(m => m.BigId == productId).FirstOrDefault();
+            product.Submissions = product.Submissions.OrderByDescending(m => m.ReleaseRank).ToList();
             ViewData["productId"] = productId;
             return View("Submissions", product);
         }
@@ -136,11 +222,6 @@ namespace DevCenterGallery.Web.Controllers
                     break;
             }
             return Json(new { status = preinstallKitStatus.ToString() });
-        }
-
-        public IActionResult Privacy()
-        {
-            return View();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

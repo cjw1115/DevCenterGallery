@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace DevCenterGallary.Common.Models
+namespace DevCenterGalley.Common.Models
 {
     public class AccountInfo
     {

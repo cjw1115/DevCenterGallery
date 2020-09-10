@@ -1,4 +1,4 @@
-﻿using DevCenterGallary.Common.Models;
+﻿using DevCenterGalley.Common.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;

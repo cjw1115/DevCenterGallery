@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-namespace DevCenterGallary.Common.Models
+namespace DevCenterGalley.Common.Models
 {
     public class Package
     {

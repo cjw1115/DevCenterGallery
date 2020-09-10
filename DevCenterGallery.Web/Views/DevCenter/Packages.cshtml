@@ -1,4 +1,4 @@
-﻿@model DevCenterGallary.Common.Models.Submission
+﻿@model DevCenterGalley.Common.Models.Submission
 @{
     ViewData["Title"] = "Packages";
     var productName = ViewData["productName"];
@@ -11,67 +11,91 @@
         <li class="breadcrumb-item"><a asp-action="Submissions" asp-route-productId="@productId">@productName</a></li>
         <li class="breadcrumb-item active"><a href="#">@Model.FriendlyName</a></li>
     </ol>
+    <div class="text-left" style="margin-bottom:6px;">
+        <input id="id-forceSync" productId="@productId" submissionId="@submissionId" type="button" class="syncButton" onclick="forceSync()" value="Sync Packages" />
+    </div>
     <div class="text-left">
-        <ul class="list-group">
+        <table>
             @foreach (var item in Model.Packages)
             {
-            <li class="list-group-item">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h5>@item.FileName</h5>
-                    </div>
-                    <div class="panel-body">
-                        <table class="table">
-                            @if (!string.IsNullOrEmpty(item.PackageVersion))
-                            {
-                                <tr>
-                                    <td>Version</td>
-                                    <td>@item.PackageVersion</td>
-                                </tr>
-                            }
+                <tr>
+                    <td>
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <table class="table">
+                                    <tr>
+                                        <td>
+                                            <span class="packageName">@item.FileName</span>
+                                        </td>
+                                    </tr>
+                                    @if (!string.IsNullOrEmpty(item.PackageVersion))
+                                    {
+                                        <tr>
+                                            <td class="packageDetailInfo">Version</td>
+                                            <td class="packageDetailInfo">@item.PackageVersion</td>
+                                        </tr>
+                                    }
 
-                            @if (!string.IsNullOrEmpty(item.Architecture))
-                            {
-                                <tr>
-                                    <td>Architecture</td>
-                                    <td>@item.Architecture</td>
-                                </tr>
-                            }
+                                    @if (!string.IsNullOrEmpty(item.Architecture))
+                                    {
+                                        <tr>
+                                            <td class="packageDetailInfo">Architecture</td>
+                                            <td class="packageDetailInfo">@item.Architecture</td>
+                                        </tr>
+                                    }
 
-                            @if (item.TargetPlatform != null)
-                            {
-                                <tr>
-                                    <td>Target Platform</td>
-                                    <td>@item.TargetPlatform.ToString()</td>
-                                </tr>
-                            }
+                                    @if (item.TargetPlatform != null)
+                                    {
+                                        <tr>
+                                            <td class="packageDetailInfo">Available on</td>
+                                            <td class="packageDetailInfo">@item.TargetPlatform.ToString()</td>
+                                        </tr>
+                                    }
 
-                            @if (item.PreinstallKitStatus == DevCenterGallary.Common.Models.PreinstallKitStatus.Ready)
-                            {
-                                <tr>
-                                    <td><a href="@item.PackgeFileInfo.SasUrl">Download Preinstall Kit</a></td>
-                                </tr>
-                            }
-                            else if (item.PreinstallKitStatus == DevCenterGallary.Common.Models.PreinstallKitStatus.NeedToGenerate)
-                            {
-                                <tr>
-                                    <td>
-                                        <a id="id-generatePreinstallKit" productId="@productId" submissionId="@Model.SubmissionId" packageId="@item.PackageId" onclick="_generatePreinstallKit(this)" href="javascript:void(0);">Generate Preinstall Kit</a>
-                                        <div id="id-generatingPreinstallKit" hidden="hidden">
-                                            <span style="color:green">Generating Preinstall Kit...</span>
-                                            <span style="font-size:12px">(This may take several minutes, page will reload after generating done)</span>
-                                        </div>
+                                    @if (item.PreinstallKitStatus == DevCenterGalley.Common.Models.PreinstallKitStatus.Ready)
+                                    {
+                                        <tr>
+                                            <td><a href="@item.PackgeFileInfo.SasUrl">Download Preinstall Kit</a></td>
+                                        </tr>
+                                    }
+                                    else if (item.PreinstallKitStatus == DevCenterGalley.Common.Models.PreinstallKitStatus.NeedToGenerate)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <a id="id-generatePreinstallKit" productId="@productId" submissionId="@Model.SubmissionId" packageId="@item.PackageId" onclick="_generatePreinstallKit(this)" href="javascript:void(0);">Generate Preinstall Kit</a>
+                                                <div id="id-generatingPreinstallKit" hidden="hidden">
+                                                    <span style="color:green">Generating Preinstall Kit...</span>
+                                                    <span style="font-size:12px">(This may take several minutes, page will reload after generating done)</span>
+                                                </div>
 
-                                    </td>
-                                </tr>
-                            }
-                        </table>
-                    </div>
-                </div>
-            </li>
+                                            </td>
+                                        </tr>
+                                    }
+                                </table>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
             }
-        </ul>
+        </table>
     </div>
+<style type="text/css">
+    .packageName{
+        font-size:14px;
+        font-family:'Segoe UI';
+        color:#000
+    }
+    .packageDetailInfo{
+        font-size:14px;
+        font-family:'Segoe UI';
+        color:#00000099;
+    }
+    .packageLink{
+        font-size:14px;
+        font-family:'Segoe UI';
+        color:#106ebe;
+    }
+</style>
     <script type="text/javascript">
         function _queryPreinstallKitWorkflowStatus() {
             var proId = $("#id-generatePreinstallKit").attr("productId");

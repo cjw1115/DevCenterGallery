@@ -1,4 +1,4 @@
-﻿@model DevCenterGallary.Common.Models.Product
+﻿@model DevCenterGalley.Common.Models.Product
 @{
     ViewData["Title"] = "Submissions";
     var productId = ViewData["productId"];
@@ -7,13 +7,23 @@
         <li class="breadcrumb-item"><a asp-action="Products">Products</a></li>
         <li class="breadcrumb-item active"><a href="#">@Model.Name</a></li>
     </ol>
+    <div class="text-left" style="margin-bottom:6px">
+        <input id="id-forceSync" productId="@productId" submissionId="" type="button" class="syncButton"  onclick="forceSync()" value="Sync Submissions" />
+    </div>
     <div class="text-left">
         <ul class="list-group">
             @foreach (var item in Model.Submissions)
             {
                 <li class ="list-group-item">
-                    <a asp-action="Packages" asp-route-productId="@Model.BigId" asp-route-submissionId="@item.SubmissionId">@item.FriendlyName</a>
+                    <a class="subName" asp-action="Packages" asp-route-productId="@Model.BigId" asp-route-submissionId="@item.SubmissionId">@item.FriendlyName</a>
                 </li>
                 }
         </ul>
     </div>
+<style type="text/css">
+    .subName{
+        color:#106ebe;
+        font-size:14px;
+        font-family:'Segoe UI'
+    }
+</style>

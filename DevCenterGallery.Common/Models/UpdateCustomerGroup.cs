@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace DevCenterGallary.Common.Models
+namespace DevCenterGalley.Common.Models
 {
     public class UpdateCustomerGroup
     {
