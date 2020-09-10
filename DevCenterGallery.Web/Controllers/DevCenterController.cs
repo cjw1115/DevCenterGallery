@@ -58,12 +58,13 @@ namespace DevCenterGallery.Web.Controllers
                 {
                     var pack = _dbContext.Packages
                         .Include(m => m.Assets).ThenInclude(m => m.FileInfo)
-                        .Include(m => m.TargetPlatform)
-                        .Include(m => m.PackgeFileInfo)
+                        .Include(m => m.RuntimeTargetPlatforms)
                         .Where(m => m.PackageId == item.PackageId).FirstOrDefault();
 
-                    pack.PackgeFileInfo = pack.Assets?.FirstOrDefault(m => m.AssetType == "UAPPreinstalledBinary")?.FileInfo;
-                    pack.PreinstallKitStatus = pack.PackgeFileInfo != null ? PreinstallKitStatus.Ready : PreinstallKitStatus.NeedToGenerate;
+
+                    pack.PackgeFileInfo = item.Assets?.FirstOrDefault(m => m.AssetType == "UAPPreinstalledBinary")?.FileInfo;
+                    pack.PreinstallKitStatus = item.PackgeFileInfo != null ? PreinstallKitStatus.Ready : PreinstallKitStatus.NeedToGenerate;
+                    pack.TargetPlatform = item.RuntimeTargetPlatforms.First();
 
                     if (pacakges != null)
                     {
@@ -96,6 +97,7 @@ namespace DevCenterGallery.Web.Controllers
                     break;
                 case WorkflowState.GeneratePreinstallPackageComplete:
                     preinstallKitStatus = PreinstallKitStatus.Ready;
+
                     var package = await _storeService.GetPackagesAsync(productId, submissionId);
                     var submission = _dbContext.Submissions.Include(m => m.Packages).FirstOrDefault(m => m.SubmissionId == submissionId);
                     submission.Packages.Clear();
@@ -104,6 +106,7 @@ namespace DevCenterGallery.Web.Controllers
                         submission.Packages.Add(item);
                     }
                     _dbContext.SaveChanges();
+
                     break;
                 case WorkflowState.GeneratePreinstallPackageFailed:
                     preinstallKitStatus = PreinstallKitStatus.NeedToGenerate;
@@ -124,13 +127,14 @@ namespace DevCenterGallery.Web.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
         [HttpPost]
         public IActionResult Clean()
         {
             var products = _dbContext.Products.ToList();
             _dbContext.RemoveRange(products);
             _dbContext.SaveChanges();
-            return View("Product");
+            return RedirectToAction("Products");
         }
     }
 }

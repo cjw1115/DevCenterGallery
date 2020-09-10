@@ -2,19 +2,17 @@
 @{
     ViewData["Title"] = "Products";
 }
-<div>
-    <form asp-action="Clean" method="post">
-        <input type="submit" value="Clean"/>
-    </form>
-</div>
-    <div class="text-left">
-        <ul class="list-group">
-            @foreach (var item in Model)
-            {
+<ol class="breadcrumb">
+    <li class="breadcrumb-item active"><a href="#">Products</a></li>
+</ol>
+<div class="text-left">
+    <ul class="list-group">
+        @foreach (var item in Model)
+        {
             <li class="list-group-item">
                 <a asp-action="Submissions" asp-route-productId="@item.BigId">@item.Name</a>
-                <input  type="hidden" value="@item.BigId"/>
+                <input type="hidden" value="@item.BigId" />
             </li>
-            }
-        </ul>
-    </div>
+        }
+    </ul>
+</div>

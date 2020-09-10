@@ -110,12 +110,6 @@ namespace DevCenterGallary.Common.Services
                 var submissions = JsonSerializer.Deserialize<List<PackagesModel>>(stringContent);
                 if (submissions != null && submissions.Count > 0)
                 {
-                    foreach (var item in submissions[0].Packages)
-                    {
-                        item.PackgeFileInfo = item.Assets?.FirstOrDefault(m => m.AssetType == "UAPPreinstalledBinary")?.FileInfo;
-                        item.PreinstallKitStatus = item.PackgeFileInfo != null ? PreinstallKitStatus.Ready : PreinstallKitStatus.NeedToGenerate;
-                        item.TargetPlatform = item.RuntimeTargetPlatforms.First();
-                    }
                     return submissions[0].Packages;
                 }
             }

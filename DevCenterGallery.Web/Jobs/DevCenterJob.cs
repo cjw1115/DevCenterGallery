@@ -22,7 +22,7 @@ namespace DevCenterGallery.Web.Jobs
             _storeService = new StoreService(_cookieService);
         }
 
-        [Invoke(Begin = "2020.09.09 05:04:00", Interval = 1000 * 60 * 60 * 3, SkipWhileExecuting = true)]
+        [Invoke(Begin = "2020.09.10 12:28:00", Interval = 1000 * 60 * 60 * 3, SkipWhileExecuting = true)]
         public async void RefreshProducts()
         {
             try
@@ -34,10 +34,17 @@ namespace DevCenterGallery.Web.Jobs
                     product.Submissions = await _storeService.GetSubmissionsAsync(product.BigId);
                     foreach (var submission in product.Submissions)
                     {
+                        submission.Product = product;
                         submission.Packages = await _storeService.GetPackagesAsync(product.BigId, submission.SubmissionId);
+                        foreach (var package in submission.Packages)
+                        {
+                            package.Submission = submission;
+                        }
                     }
                 }
-                _dbContext.Products.RemoveRange(_dbContext.Products);
+                var oldProducts = _dbContext.Products.ToList();
+                _dbContext.RemoveRange(oldProducts);
+                _dbContext.SaveChanges();
                 _dbContext.Products.AddRange(products);
                 _dbContext.SaveChanges();
             }

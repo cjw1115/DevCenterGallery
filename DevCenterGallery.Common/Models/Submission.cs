@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace DevCenterGallary.Common.Models
 {
     public class Submission
     {
-        [JsonIgnore]
-        public int Id { get; set; }
-
+        [Key]
         [JsonPropertyName("id")]
         public string SubmissionId { get; set; }
 
@@ -23,7 +22,11 @@ namespace DevCenterGallary.Common.Models
 
         [JsonPropertyName("releaseRank")]
         public int ReleaseRank { get; set; }
+        [Required]
+        public List<Package> Packages { get; set; }
 
-        public List<Package> Packages { get; set; } 
+        [Required]
+        [JsonIgnore]
+        public virtual Product Product { get; set; }
     }
 }
