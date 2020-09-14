@@ -33,6 +33,7 @@ namespace DevCenterGallery.Web.Controllers
         [HttpPost]
         public async Task<JsonResult> SyncDevCenter(string productId, string submissionId)
         {
+            _logger.LogInformation($"Start to Sync DevCenter, ProductId: {productId}, SubmissionId: {submissionId}");
             string errorMsg = string.Empty;
             try
             {
@@ -52,6 +53,7 @@ namespace DevCenterGallery.Web.Controllers
             }
             catch (Exception e)
             {
+                _logger.LogError($"Sync failed. {e.Message}{Environment.NewLine}{e.StackTrace}");
                 errorMsg = e.Message;
             }
             var result = new { result = string.IsNullOrEmpty(errorMsg) ? 200 : 400, msg = errorMsg };

@@ -103,6 +103,7 @@
         function forceSync() {
 
             $("#id-overlay").attr("hidden", false);
+            var oldValue = $("#id-forceSync").val();
             $("#id-forceSync").val("Sync ......");
             var prodId = $("#id-forceSync").attr("productId");
             var subId = $("#id-forceSync").attr("submissionId");
@@ -115,10 +116,12 @@
                 function (result) {
                     if (result.result != 200) {
                         console.log(result.msg);
+                        $("#id-overlay").attr("hidden", true);
+                        $("#id-forceSync").val(oldValue);
                     } else {
-                        console.log("Sync successfully")
+                        console.log("Sync successfully");
+                        window.location.reload();
                     }
-                    window.location.reload();
                 });
         }
     </script>

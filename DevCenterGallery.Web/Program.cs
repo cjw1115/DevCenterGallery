@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Serilog.Extensions.Logging;
 
 namespace DevCenterGallery.Web
 {
@@ -18,6 +19,14 @@ namespace DevCenterGallery.Web
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .ConfigureLogging(logging =>
+                {
+                    logging.AddFile("Logs/FlightGallery-{Date}.txt");
+                    logging.AddEventLog(settings =>
+                    {
+                        settings.SourceName = "FlightGallery";
+                    });
+                })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();

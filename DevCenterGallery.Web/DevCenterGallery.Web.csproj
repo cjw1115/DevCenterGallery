@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,9 +11,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.7" />
+    <PackageReference Include="Serilog.Extensions.Logging.File" Version="2.0.0" />
     <PackageReference Include="TimedJob" Version="2.0.0" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\DevCenterGallery.Common\DevCenterGallery.Common.csproj" />
   </ItemGroup>

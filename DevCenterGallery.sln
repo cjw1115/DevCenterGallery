@@ -5,9 +5,9 @@ VisualStudioVersion = 16.0.29411.108
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevCenterGallery", "DevCenterGallery\DevCenterGallery.csproj", "{5F17F9F7-0875-4F43-8D00-42DEEBD3256F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevCenterGallery.Web", "DevCenterGallery.Web\DevCenterGallery.Web.csproj", "{8D9ABC71-36E0-4D09-85F5-3B37B96C4969}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DevCenterGallery.Web", "DevCenterGallery.Web\DevCenterGallery.Web.csproj", "{8D9ABC71-36E0-4D09-85F5-3B37B96C4969}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevCenterGallery.Common", "DevCenterGallery.Common\DevCenterGallery.Common.csproj", "{3C6AA6D4-1D89-482A-A9C2-8BB6A4BB5482}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DevCenterGallery.Common", "DevCenterGallery.Common\DevCenterGallery.Common.csproj", "{3C6AA6D4-1D89-482A-A9C2-8BB6A4BB5482}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,8 +55,8 @@ Global
 		{3C6AA6D4-1D89-482A-A9C2-8BB6A4BB5482}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3C6AA6D4-1D89-482A-A9C2-8BB6A4BB5482}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{3C6AA6D4-1D89-482A-A9C2-8BB6A4BB5482}.Release|ARM64.Build.0 = Release|Any CPU
-		{3C6AA6D4-1D89-482A-A9C2-8BB6A4BB5482}.Release|x64.ActiveCfg = Release|Any CPU
-		{3C6AA6D4-1D89-482A-A9C2-8BB6A4BB5482}.Release|x64.Build.0 = Release|Any CPU
+		{3C6AA6D4-1D89-482A-A9C2-8BB6A4BB5482}.Release|x64.ActiveCfg = Release|x64
+		{3C6AA6D4-1D89-482A-A9C2-8BB6A4BB5482}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
